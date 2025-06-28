@@ -3,6 +3,8 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import SuperAdminHeader from "./SuperAdminHeader";
 import SuperAdminDashboard from "./SuperAdminDashboard";
+import TenantDetailPage from "./TenantDetailPage";
+import TenantSettingsPage from "./TenantSettingsPage";
 
 const SuperAdminApp = () => {
   const { signOut } = useAuth();
@@ -22,6 +24,8 @@ const SuperAdminApp = () => {
         <Routes>
           <Route path="/" element={<Navigate to="/super-admin/dashboard" replace />} />
           <Route path="/dashboard" element={<SuperAdminDashboard />} />
+          <Route path="/tenants/:tenantId" element={<TenantDetailPage />} />
+          <Route path="/tenants/:tenantId/settings" element={<TenantSettingsPage />} />
         </Routes>
       </main>
     </div>

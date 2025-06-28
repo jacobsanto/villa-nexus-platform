@@ -2,6 +2,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Eye, Settings } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Tenant } from "@/types";
 
 interface TenantListItemProps {
@@ -9,6 +10,16 @@ interface TenantListItemProps {
 }
 
 const TenantListItem = ({ tenant }: TenantListItemProps) => {
+  const navigate = useNavigate();
+
+  const handleViewTenant = () => {
+    navigate(`/super-admin/tenants/${tenant.id}`);
+  };
+
+  const handleTenantSettings = () => {
+    navigate(`/super-admin/tenants/${tenant.id}/settings`);
+  };
+
   return (
     <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-slate-50 transition-colors">
       <div className="flex items-center space-x-4">
@@ -41,11 +52,11 @@ const TenantListItem = ({ tenant }: TenantListItemProps) => {
           {tenant.status}
         </Badge>
         <div className="flex space-x-2">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={handleViewTenant}>
             <Eye className="w-4 h-4 mr-1" />
             View
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={handleTenantSettings}>
             <Settings className="w-4 h-4 mr-1" />
             Settings
           </Button>

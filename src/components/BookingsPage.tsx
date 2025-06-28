@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Calendar, List, Clock } from "lucide-react";
@@ -158,7 +157,6 @@ const BookingsPage = () => {
           eventDisplay="block"
           displayEventTime={false}
           aspectRatio={1.8}
-          responsive={true}
           eventMouseEnter={(info) => {
             info.el.style.cursor = 'pointer';
           }}

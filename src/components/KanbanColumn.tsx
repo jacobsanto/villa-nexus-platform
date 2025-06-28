@@ -1,17 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import TaskCard from "./TaskCard";
-
-interface Task {
-  id: string;
-  title: string;
-  description?: string;
-  status: string;
-  task_type: string;
-  due_date?: string;
-  assigned_to?: string;
-  assignee_name?: string;
-}
+import { Task } from "@/types";
 
 interface KanbanColumnProps {
   title: string;

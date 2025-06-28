@@ -2,89 +2,73 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/components/ui/use-toast";
 import KanbanColumn from "./KanbanColumn";
 import ViewSwitcher from "./ViewSwitcher";
-
-interface Task {
-  id: string;
-  title: string;
-  description?: string;
-  status: string;
-  task_type: string;
-  due_date?: string;
-  assigned_to?: string;
-  assignee_name?: string;
-}
+import { Task } from "@/types";
 
 const TasksPage = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeView, setActiveView] = useState<'board' | 'list' | 'agenda'>('board');
+  const { profile } = useAuth();
+  const { toast } = useToast();
 
-  // Mock data for demonstration
-  const mockTasks: Task[] = [
-    {
-      id: '1',
-      title: 'Repair air conditioning - Ocean View Villa',
-      description: 'High priority maintenance request',
-      status: 'to-do',
-      task_type: 'maintenance',
-      due_date: '2024-01-15',
-      assigned_to: '1',
-      assignee_name: 'John Smith'
-    },
-    {
-      id: '2',
-      title: 'Deep cleaning - Mountain Cabin',
-      description: 'Scheduled cleaning between guests',
-      status: 'in-progress',
-      task_type: 'housekeeping',
-      due_date: '2024-01-16',
-      assigned_to: '2',
-      assignee_name: 'Cleaning Team A'
-    },
-    {
-      id: '3',
-      title: 'Property inspection - City Apartment',
-      description: 'Monthly safety inspection completed',
-      status: 'done',
-      task_type: 'inspection',
-      due_date: '2024-01-14',
-      assigned_to: '3',
-      assignee_name: 'Sarah Johnson'
-    },
-    {
-      id: '4',
-      title: 'Replace broken window - Beach House',
-      description: 'Guest reported cracked window in bedroom',
-      status: 'to-do',
-      task_type: 'maintenance',
-      due_date: '2024-01-17',
-      assigned_to: '1',
-      assignee_name: 'John Smith'
-    },
-    {
-      id: '5',
-      title: 'Stock bathroom supplies - Downtown Loft',
-      description: 'Restock towels and toiletries',
-      status: 'to-do',
-      task_type: 'housekeeping',
-      due_date: '2024-01-18'
+  const fetchTasks = async () => {
+    if (!profile?.tenant_id) {
+      setLoading(false);
+      return;
     }
-  ];
+
+    try {
+      setLoading(true);
+      
+      // Fetch tasks with joined data for assignee names
+      const { data: tasksData, error } = await supabase
+        .from('tasks')
+        .select(`
+          *,
+          assignee:profiles!tasks_assigned_to_fkey(full_name),
+          property:properties!tasks_property_id_fkey(name)
+        `)
+        .eq('tenant_id', profile.tenant_id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching tasks:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load tasks. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Transform the data to match our Task interface
+      const transformedTasks: Task[] = (tasksData || []).map(task => ({
+        ...task,
+        assignee_name: task.assignee?.full_name,
+        property_name: task.property?.name,
+      }));
+
+      setTasks(transformedTasks);
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load tasks. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // Simulate API call
-    const fetchTasks = async () => {
-      setLoading(true);
-      // Simulate loading delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setTasks(mockTasks);
-      setLoading(false);
-    };
-
     fetchTasks();
-  }, []);
+  }, [profile?.tenant_id]);
 
   const getTasksByStatus = (status: string) => {
     return tasks.filter(task => task.status === status);
@@ -158,6 +142,15 @@ const TasksPage = () => {
         {activeView === 'list' && renderPlaceholderView('List')}
         {activeView === 'agenda' && renderPlaceholderView('Agenda')}
       </div>
+
+      {tasks.length === 0 && !loading && (
+        <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg">
+          <div className="text-center">
+            <p className="text-gray-500 text-lg mb-2">No tasks found</p>
+            <p className="text-gray-400 text-sm">Create your first task to get started</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

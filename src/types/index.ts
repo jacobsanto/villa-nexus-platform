@@ -1,4 +1,3 @@
-
 export interface Tenant {
   id: string;
   name: string;
@@ -48,4 +47,19 @@ export interface Property {
   nightly_rate?: number;
   created_at: string;
   updated_at: string;
+}
+
+export interface Task {
+  id: string;
+  created_at: string;
+  tenant_id: string;
+  property_id?: string;
+  assigned_to?: string;
+  title: string;
+  description?: string;
+  status: string;
+  due_date?: string;
+  task_type: string;
+  assignee_name?: string; // This will be joined from profiles table
+  property_name?: string; // This will be joined from properties table
 }

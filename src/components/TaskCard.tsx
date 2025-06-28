@@ -4,17 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Calendar, User } from "lucide-react";
 import { format } from "date-fns";
-
-interface Task {
-  id: string;
-  title: string;
-  description?: string;
-  status: string;
-  task_type: string;
-  due_date?: string;
-  assigned_to?: string;
-  assignee_name?: string;
-}
+import { Task } from "@/types";
 
 interface TaskCardProps {
   task: Task;

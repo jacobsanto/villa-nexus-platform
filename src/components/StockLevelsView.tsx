@@ -39,7 +39,7 @@ const StockLevelsView = () => {
 
       if (error) throw error;
 
-      const uniqueLocations = [...new Set((data || []).map((item: any) => item.location as string))];
+      const uniqueLocations: string[] = [...new Set((data || []).map((item: any) => item.location as string))];
       setLocations(uniqueLocations);
       
       if (uniqueLocations.length > 0 && !selectedLocation) {

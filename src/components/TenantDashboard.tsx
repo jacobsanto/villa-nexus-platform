@@ -4,6 +4,7 @@ import TenantSidebar from "./TenantSidebar";
 import DashboardPage from "./DashboardPage";
 import PropertiesPage from "./PropertiesPage";
 import BookingsPage from "./BookingsPage";
+import InventoryPage from "./InventoryPage";
 import IntegrationsPage from "./IntegrationsPage";
 import TasksPage from "./TasksPage";
 import SettingsPage from "./SettingsPage";
@@ -19,6 +20,8 @@ const TenantDashboard = () => {
         return <PropertiesPage />;
       case 'bookings':
         return <BookingsPage />;
+      case 'inventory':
+        return <InventoryPage />;
       case 'integrations':
         return <IntegrationsPage />;
       case 'tasks':

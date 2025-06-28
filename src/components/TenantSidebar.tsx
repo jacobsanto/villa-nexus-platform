@@ -1,5 +1,4 @@
-
-import { Building2, Home, ClipboardList, Settings, Plug, LogOut, User, Calendar } from "lucide-react";
+import { Building2, Home, ClipboardList, Settings, Plug, LogOut, User, Calendar, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTenant } from "@/contexts/TenantContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,6 +16,7 @@ const TenantSidebar = ({ activePage, setActivePage }: TenantSidebarProps) => {
     { id: 'dashboard', name: 'Dashboard', icon: Home },
     { id: 'properties', name: 'Properties', icon: Building2 },
     { id: 'bookings', name: 'Bookings', icon: Calendar },
+    { id: 'inventory', name: 'Inventory', icon: Package },
     { id: 'integrations', name: 'Integrations', icon: Plug },
     { id: 'tasks', name: 'Tasks', icon: ClipboardList },
     { id: 'settings', name: 'Settings', icon: Settings },

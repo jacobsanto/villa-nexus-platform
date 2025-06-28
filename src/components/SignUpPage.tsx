@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -54,8 +53,14 @@ const SignUpPage = () => {
 
       console.log('✅ Tenant creation result:', data);
 
-      // Type assertion to properly handle the JSON response
-      const result = data as TenantCreationResult;
+      // Safely parse the JSON response
+      let result: TenantCreationResult;
+      try {
+        result = typeof data === 'string' ? JSON.parse(data) : data as TenantCreationResult;
+      } catch (parseError) {
+        console.error('❌ Error parsing result:', parseError);
+        throw new Error('Invalid response format from server');
+      }
 
       if (result?.success) {
         setSuccess(true);

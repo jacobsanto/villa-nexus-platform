@@ -25,28 +25,40 @@ const MessageView = ({ channelId, channelName }: MessageViewProps) => {
       if (!channelId) return;
 
       setLoading(true);
-      const { data, error } = await supabase
+      
+      // First get the messages
+      const { data: messagesData, error: messagesError } = await supabase
         .from('messages')
-        .select(`
-          *,
-          sender:profiles!messages_sender_id_fkey(full_name)
-        `)
+        .select('*')
         .eq('channel_id', channelId)
         .order('created_at', { ascending: true });
 
-      if (error) {
-        console.error('Error fetching messages:', error);
+      if (messagesError) {
+        console.error('Error fetching messages:', messagesError);
         return;
       }
 
-      const formattedMessages: Message[] = (data || []).map(msg => ({
+      // Then get the profiles for the senders
+      const senderIds = [...new Set(messagesData.map(msg => msg.sender_id))];
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .in('id', senderIds);
+
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        return;
+      }
+
+      // Combine the data
+      const formattedMessages: Message[] = messagesData.map(msg => ({
         id: msg.id,
         channel_id: msg.channel_id,
         sender_id: msg.sender_id,
         content: msg.content,
         created_at: msg.created_at,
-        sender: msg.sender ? {
-          full_name: msg.sender.full_name,
+        sender: profilesData.find(p => p.id === msg.sender_id) ? {
+          full_name: profilesData.find(p => p.id === msg.sender_id)!.full_name,
           avatar_url: undefined
         } : undefined
       }));
@@ -74,27 +86,24 @@ const MessageView = ({ channelId, channelName }: MessageViewProps) => {
         async (payload) => {
           console.log('New message received:', payload);
           
-          // Fetch the complete message with sender info
-          const { data, error } = await supabase
-            .from('messages')
-            .select(`
-              *,
-              sender:profiles!messages_sender_id_fkey(full_name)
-            `)
-            .eq('id', payload.new.id)
+          // Fetch the sender's profile
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('id', payload.new.sender_id)
             .single();
 
-          if (!error && data) {
+          if (!profileError && profileData) {
             const newMessage: Message = {
-              id: data.id,
-              channel_id: data.channel_id,
-              sender_id: data.sender_id,
-              content: data.content,
-              created_at: data.created_at,
-              sender: data.sender ? {
-                full_name: data.sender.full_name,
+              id: payload.new.id,
+              channel_id: payload.new.channel_id,
+              sender_id: payload.new.sender_id,
+              content: payload.new.content,
+              created_at: payload.new.created_at,
+              sender: {
+                full_name: profileData.full_name,
                 avatar_url: undefined
-              } : undefined
+              }
             };
 
             setMessages(prev => [...prev, newMessage]);

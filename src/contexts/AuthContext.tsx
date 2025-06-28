@@ -27,17 +27,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const role = profile?.role || null;
 
   const fetchProfile = async (userId: string) => {
+    console.log('🔍 Fetching profile for user:', userId);
     try {
       const { data: profileData, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle(); // Use maybeSingle instead of single to handle no results gracefully
       
       if (error) {
-        console.error('Error fetching profile:', error);
+        console.error('❌ Error fetching profile:', error);
         return null;
       }
+      
+      if (!profileData) {
+        console.warn('⚠️ No profile found for user:', userId);
+        return null;
+      }
+
+      console.log('✅ Profile fetched successfully:', profileData);
       
       const typedProfile: UserProfile = {
         ...profileData,
@@ -45,38 +53,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
       return typedProfile;
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('💥 Exception while fetching profile:', error);
       return null;
     }
   };
 
   // Handle navigation after successful authentication
-  const handleAuthNavigation = (userProfile: UserProfile | null) => {
-    if (!userProfile) return;
-
+  const handleAuthNavigation = (userProfile: UserProfile | null, userId: string) => {
+    console.log('🧭 Handling navigation for user:', userId, 'profile:', userProfile);
+    
     const currentPath = window.location.pathname;
+    console.log('📍 Current path:', currentPath);
     
     // If user is on login pages, redirect them based on their role
     if (currentPath === '/login' || currentPath === '/admin') {
-      if (userProfile.role === 'super_admin') {
+      if (userProfile?.role === 'super_admin') {
+        console.log('🚀 Navigating super admin to dashboard');
         navigate('/super-admin/dashboard', { replace: true });
-      } else {
+      } else if (userProfile?.role === 'admin' || userProfile?.role === 'member') {
+        console.log('🚀 Navigating regular user to dashboard');
         navigate('/dashboard', { replace: true });
+      } else {
+        // Fallback: If no profile but we have a session, navigate based on current path
+        console.log('⚠️ No profile role, using fallback navigation');
+        if (currentPath === '/admin') {
+          navigate('/super-admin/dashboard', { replace: true });
+        } else {
+          navigate('/dashboard', { replace: true });
+        }
       }
     }
   };
 
   useEffect(() => {
     let mounted = true;
+    console.log('🔄 AuthContext initializing...');
 
     const initializeAuth = async () => {
       try {
+        console.log('🎯 Getting current session...');
         // Get current session
         const { data: { session: currentSession } } = await supabase.auth.getSession();
         
         if (!mounted) return;
 
         if (currentSession?.user) {
+          console.log('✅ Current session found:', currentSession.user.id);
           setSession(currentSession);
           setUser(currentSession.user);
           
@@ -84,10 +106,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const profileData = await fetchProfile(currentSession.user.id);
           if (mounted) {
             setProfile(profileData);
-            handleAuthNavigation(profileData);
+            handleAuthNavigation(profileData, currentSession.user.id);
             setLoading(false); // Only set loading to false after profile is fetched
           }
         } else {
+          console.log('❌ No current session found');
           setSession(null);
           setUser(null);
           setProfile(null);
@@ -96,7 +119,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
       } catch (error) {
-        console.error('Error initializing auth:', error);
+        console.error('💥 Error initializing auth:', error);
         if (mounted) {
           setSession(null);
           setUser(null);
@@ -109,11 +132,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.id);
+        console.log('🔄 Auth state changed:', event, session?.user?.id);
         
         if (!mounted) return;
 
         if (session?.user) {
+          console.log('✅ New session established:', session.user.id);
           setSession(session);
           setUser(session.user);
           setLoading(true); // Set loading to true while fetching profile
@@ -122,10 +146,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const profileData = await fetchProfile(session.user.id);
           if (mounted) {
             setProfile(profileData);
-            handleAuthNavigation(profileData);
+            handleAuthNavigation(profileData, session.user.id);
             setLoading(false); // Only set loading to false after profile is fetched
           }
         } else {
+          console.log('❌ Session cleared');
           setSession(null);
           setUser(null);
           setProfile(null);
@@ -140,15 +165,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initializeAuth();
 
     return () => {
+      console.log('🧹 AuthContext cleanup');
       mounted = false;
       subscription.unsubscribe();
     };
   }, [navigate]);
 
   const signOut = async () => {
+    console.log('👋 Signing out...');
     const { error } = await supabase.auth.signOut();
     if (error) {
-      console.error('Error signing out:', error);
+      console.error('❌ Error signing out:', error);
     }
   };
 

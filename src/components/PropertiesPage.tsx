@@ -10,6 +10,7 @@ import PropertyCard from "./PropertyCard";
 import AddPropertyModal from "./AddPropertyModal";
 import EmptyState from "./EmptyState";
 import PropertySkeleton from "./PropertySkeleton";
+import { toast } from "sonner";
 
 const PropertiesPage = () => {
   const [properties, setProperties] = useState<Property[]>([]);
@@ -17,7 +18,6 @@ const PropertiesPage = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const { profile } = useAuth();
-  const { toast } = useToast();
 
   const fetchProperties = async () => {
     if (!profile?.tenant_id) {
@@ -45,11 +45,7 @@ const PropertiesPage = () => {
       setProperties(typedProperties);
     } catch (error) {
       console.error('Error fetching properties:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load properties",
-        variant: "destructive",
-      });
+      toast.error('Failed to load properties');
     } finally {
       setLoading(false);
     }
@@ -72,21 +68,14 @@ const PropertiesPage = () => {
 
       console.log('Sync response:', data);
 
-      toast({
-        title: "Success!",
-        description: data.message || `Successfully synced ${data.count || 0} properties`,
-      });
+      toast.success(data.message || `Successfully synced ${data.count || 0} properties`);
 
       // Refresh the properties list
       await fetchProperties();
       
     } catch (error) {
       console.error('Sync function error:', error);
-      toast({
-        title: "Sync Failed",
-        description: error.message || "Failed to sync with PMS. Please try again.",
-        variant: "destructive",
-      });
+      toast.error(error.message || 'Failed to sync with PMS. Please try again.');
     } finally {
       setIsSyncing(false);
     }
@@ -100,6 +89,8 @@ const PropertiesPage = () => {
     setLoading(true);
     fetchProperties();
   };
+
+  const isAdmin = profile?.role === 'admin';
 
   return (
     <div className="p-6">
@@ -116,33 +107,37 @@ const PropertiesPage = () => {
             variant="outline"
             onClick={handleRefresh}
             disabled={loading}
-            className="flex items-center"
+            className="flex items-center hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
           
-          <Button
-            variant="outline"
-            onClick={handleSync}
-            disabled={isSyncing}
-            className="flex items-center"
-          >
-            {isSyncing ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            ) : (
-              <Plug className="w-4 h-4 mr-2" />
-            )}
-            {isSyncing ? 'Syncing...' : 'Sync with PMS'}
-          </Button>
-          
-          <Button
-            onClick={() => setIsAddModalOpen(true)}
-            className="flex items-center"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Property
-          </Button>
+          {isAdmin && (
+            <>
+              <Button
+                variant="outline"
+                onClick={handleSync}
+                disabled={isSyncing}
+                className="flex items-center hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                {isSyncing ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Plug className="w-4 h-4 mr-2" />
+                )}
+                {isSyncing ? 'Syncing...' : 'Sync with PMS'}
+              </Button>
+              
+              <Button
+                onClick={() => setIsAddModalOpen(true)}
+                className="flex items-center hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Property
+              </Button>
+            </>
+          )}
         </div>
       </div>
       
@@ -154,8 +149,8 @@ const PropertiesPage = () => {
         </div>
       ) : properties.length === 0 ? (
         <EmptyState 
-          onAddProperty={() => setIsAddModalOpen(true)}
-          onSyncPMS={handleSync}
+          onAddProperty={isAdmin ? () => setIsAddModalOpen(true) : undefined}
+          onSyncPMS={isAdmin ? handleSync : undefined}
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -165,11 +160,16 @@ const PropertiesPage = () => {
         </div>
       )}
 
-      <AddPropertyModal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onSuccess={fetchProperties}
-      />
+      {isAdmin && (
+        <AddPropertyModal
+          isOpen={isAddModalOpen}
+          onClose={() => setIsAddModalOpen(false)}
+          onSuccess={() => {
+            fetchProperties();
+            toast.success('Property added successfully');
+          }}
+        />
+      )}
     </div>
   );
 };

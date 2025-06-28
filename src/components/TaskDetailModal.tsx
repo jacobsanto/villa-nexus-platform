@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -14,8 +13,8 @@ import { format, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/components/ui/use-toast";
 import { Task, Property, UserProfile } from "@/types";
+import { toast } from "sonner";
 
 interface TaskDetailModalProps {
   isOpen: boolean;
@@ -40,7 +39,7 @@ const TaskDetailModal = ({ isOpen, onClose, onSuccess, task }: TaskDetailModalPr
   });
 
   const { profile } = useAuth();
-  const { toast } = useToast();
+  const isAdmin = profile?.role === 'admin';
 
   useEffect(() => {
     if (task && isOpen) {
@@ -99,11 +98,7 @@ const TaskDetailModal = ({ isOpen, onClose, onSuccess, task }: TaskDetailModalPr
     e.preventDefault();
     
     if (!formData.title.trim() || !task) {
-      toast({
-        title: "Error",
-        description: "Task title is required",
-        variant: "destructive",
-      });
+      toast.error('Task title is required');
       return;
     }
 
@@ -127,21 +122,13 @@ const TaskDetailModal = ({ isOpen, onClose, onSuccess, task }: TaskDetailModalPr
 
       if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: "Task updated successfully",
-      });
-
+      toast.success('Task updated successfully');
       setIsEditing(false);
       onSuccess();
       onClose();
     } catch (error) {
       console.error('Error updating task:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update task. Please try again.",
-        variant: "destructive",
-      });
+      toast.error('Failed to update task. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -163,20 +150,12 @@ const TaskDetailModal = ({ isOpen, onClose, onSuccess, task }: TaskDetailModalPr
 
       if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: "Task deleted successfully",
-      });
-
+      toast.success('Task deleted successfully');
       onSuccess();
       onClose();
     } catch (error) {
       console.error('Error deleting task:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete task. Please try again.",
-        variant: "destructive",
-      });
+      toast.error('Failed to delete task. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -286,28 +265,30 @@ const TaskDetailModal = ({ isOpen, onClose, onSuccess, task }: TaskDetailModalPr
               </div>
             )}
 
-            <div className="flex justify-between pt-4">
-              <Button
-                variant="outline"
-                onClick={() => setIsEditing(true)}
-                className="flex items-center"
-              >
-                <Edit className="w-4 h-4 mr-2" />
-                Edit
-              </Button>
-              <Button
-                variant="outline"
-                onClick={handleDelete}
-                disabled={loading}
-                className="flex items-center text-red-600 hover:text-red-700 border-red-300 hover:border-red-400"
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Delete
-              </Button>
-            </div>
+            {isAdmin && (
+              <div className="flex justify-between pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsEditing(true)}
+                  className="flex items-center hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edit
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleDelete}
+                  disabled={loading}
+                  className="flex items-center text-red-600 hover:text-red-700 border-red-300 hover:border-red-400 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  {loading ? 'Deleting...' : 'Delete'}
+                </Button>
+              </div>
+            )}
           </div>
         ) : (
-          // Edit Mode
+          // Edit Mode - only shown to admins
           <form onSubmit={handleUpdate} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="title">Task Title *</Label>
@@ -421,10 +402,19 @@ const TaskDetailModal = ({ isOpen, onClose, onSuccess, task }: TaskDetailModalPr
             </div>
 
             <div className="flex justify-end space-x-2 pt-4">
-              <Button type="button" variant="outline" onClick={() => setIsEditing(false)}>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setIsEditing(false)}
+                className="hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
                 Cancel
               </Button>
-              <Button type="submit" disabled={loading}>
+              <Button 
+                type="submit" 
+                disabled={loading}
+                className="hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
                 {loading ? "Saving..." : "Save Changes"}
               </Button>
             </div>

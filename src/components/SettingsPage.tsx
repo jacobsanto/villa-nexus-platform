@@ -3,12 +3,29 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, Users, CreditCard, Shield } from "lucide-react";
+import { Settings, Users, CreditCard, Shield, Lock } from "lucide-react";
 import { useTenant } from "@/contexts/TenantContext";
+import { useAuth } from "@/contexts/AuthContext";
 import TeamPage from "./TeamPage";
 
 const SettingsPage = () => {
   const { tenant } = useTenant();
+  const { profile } = useAuth();
+
+  // Only allow admin access to settings
+  if (profile?.role !== 'admin') {
+    return (
+      <div className="p-6">
+        <div className="flex flex-col items-center justify-center h-64 text-center">
+          <Lock className="w-16 h-16 text-gray-400 mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Access Denied</h2>
+          <p className="text-gray-600">
+            You don't have permission to access settings. Only administrators can manage tenant settings.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">

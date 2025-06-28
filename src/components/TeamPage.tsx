@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Users, UserPlus, Trash2 } from "lucide-react";
+import { Users, UserPlus, Trash2, Lock } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
@@ -18,6 +18,27 @@ const TeamPage = () => {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const { profile } = useAuth();
   const { tenant } = useTenant();
+
+  const isAdmin = profile?.role === 'admin';
+
+  // Show access denied for non-admins
+  if (!isAdmin) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="py-12">
+            <div className="flex flex-col items-center justify-center text-center">
+              <Lock className="w-16 h-16 text-gray-400 mb-4" />
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Access Denied</h2>
+              <p className="text-gray-600">
+                You don't have permission to view team management. Only administrators can manage team members.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   useEffect(() => {
     fetchTeamMembers();
@@ -67,8 +88,6 @@ const TeamPage = () => {
     }
   };
 
-  const canInviteMembers = profile?.role === 'admin' || profile?.role === 'super_admin';
-
   if (loading) {
     return (
       <div className="space-y-4">
@@ -92,15 +111,13 @@ const TeamPage = () => {
                 Manage your team members and their roles
               </CardDescription>
             </div>
-            {canInviteMembers && (
-              <Button 
-                onClick={() => setIsInviteModalOpen(true)}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-              >
-                <UserPlus className="w-4 h-4 mr-2" />
-                Invite Member
-              </Button>
-            )}
+            <Button 
+              onClick={() => setIsInviteModalOpen(true)}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              <UserPlus className="w-4 h-4 mr-2" />
+              Invite Member
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -134,12 +151,12 @@ const TeamPage = () => {
                       {new Date(member.created_at).toLocaleDateString()}
                     </TableCell>
                     <TableCell className="text-right">
-                      {canInviteMembers && member.id !== profile?.id && (
+                      {member.id !== profile?.id && (
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleRemoveMember(member.id)}
-                          className="text-red-600 hover:text-red-700"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -156,7 +173,10 @@ const TeamPage = () => {
       <InviteMemberModal
         isOpen={isInviteModalOpen}
         onClose={() => setIsInviteModalOpen(false)}
-        onSuccess={fetchTeamMembers}
+        onSuccess={() => {
+          fetchTeamMembers();
+          toast.success('Invitation sent successfully');
+        }}
       />
     </div>
   );

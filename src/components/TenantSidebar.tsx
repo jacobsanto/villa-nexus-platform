@@ -14,15 +14,20 @@ const TenantSidebar = ({ activePage, setActivePage }: TenantSidebarProps) => {
   const { profile, signOut } = useAuth();
 
   const navigationItems = [
-    { id: 'dashboard', name: 'Dashboard', icon: Home },
-    { id: 'properties', name: 'Properties', icon: Building2 },
-    { id: 'bookings', name: 'Bookings', icon: Calendar },
-    { id: 'inventory', name: 'Inventory', icon: Package },
-    { id: 'damage-reports', name: 'Damage Reports', icon: AlertTriangle },
-    { id: 'integrations', name: 'Integrations', icon: Plug },
-    { id: 'tasks', name: 'Tasks', icon: ClipboardList },
-    { id: 'settings', name: 'Settings', icon: Settings },
+    { id: 'dashboard', name: 'Dashboard', icon: Home, roles: ['admin', 'member'] },
+    { id: 'properties', name: 'Properties', icon: Building2, roles: ['admin', 'member'] },
+    { id: 'bookings', name: 'Bookings', icon: Calendar, roles: ['admin', 'member'] },
+    { id: 'inventory', name: 'Inventory', icon: Package, roles: ['admin', 'member'] },
+    { id: 'damage-reports', name: 'Damage Reports', icon: AlertTriangle, roles: ['admin', 'member'] },
+    { id: 'integrations', name: 'Integrations', icon: Plug, roles: ['admin', 'member'] },
+    { id: 'tasks', name: 'Tasks', icon: ClipboardList, roles: ['admin', 'member'] },
+    { id: 'settings', name: 'Settings', icon: Settings, roles: ['admin'] }, // Only admins can access settings
   ];
+
+  // Filter navigation items based on user role
+  const filteredNavigationItems = navigationItems.filter(item => 
+    item.roles.includes(profile?.role || 'member')
+  );
 
   const handleSignOut = async () => {
     try {
@@ -54,7 +59,7 @@ const TenantSidebar = ({ activePage, setActivePage }: TenantSidebarProps) => {
 
       {/* Navigation Links */}
       <nav className="flex-1 px-4 py-6 space-y-2">
-        {navigationItems.map((item) => {
+        {filteredNavigationItems.map((item) => {
           const isActive = activePage === item.id;
           const Icon = item.icon;
           
@@ -62,10 +67,10 @@ const TenantSidebar = ({ activePage, setActivePage }: TenantSidebarProps) => {
             <button
               key={item.id}
               onClick={() => setActivePage(item.id)}
-              className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+              className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
                 isActive
                   ? 'text-white shadow-sm'
-                  : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                  : 'text-gray-700 hover:text-gray-900'
               }`}
               style={isActive ? { backgroundColor: tenant?.primary_color || '#0ea5e9' } : {}}
             >
@@ -95,7 +100,7 @@ const TenantSidebar = ({ activePage, setActivePage }: TenantSidebarProps) => {
           variant="outline" 
           size="sm" 
           onClick={handleSignOut}
-          className="w-full"
+          className="w-full hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
           <LogOut className="w-4 h-4 mr-2" />
           Sign Out

@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Plug, RefreshCw } from "lucide-react";
+import { Plus, Plug, RefreshCw, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -14,6 +14,7 @@ import PropertySkeleton from "./PropertySkeleton";
 const PropertiesPage = () => {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const { profile } = useAuth();
   const { toast } = useToast();
@@ -54,16 +55,46 @@ const PropertiesPage = () => {
     }
   };
 
+  const handleSync = async () => {
+    setIsSyncing(true);
+    
+    try {
+      console.log('Starting PMS sync...');
+      
+      const { data, error } = await supabase.functions.invoke('sync-pms', {
+        method: 'POST'
+      });
+
+      if (error) {
+        console.error('Sync error:', error);
+        throw new Error(error.message || 'Failed to sync with PMS');
+      }
+
+      console.log('Sync response:', data);
+
+      toast({
+        title: "Success!",
+        description: data.message || `Successfully synced ${data.count || 0} properties`,
+      });
+
+      // Refresh the properties list
+      await fetchProperties();
+      
+    } catch (error) {
+      console.error('Sync function error:', error);
+      toast({
+        title: "Sync Failed",
+        description: error.message || "Failed to sync with PMS. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   useEffect(() => {
     fetchProperties();
   }, [profile?.tenant_id]);
-
-  const handleSyncPMS = () => {
-    toast({
-      title: "Coming Soon",
-      description: "PMS sync functionality will be available soon!",
-    });
-  };
 
   const handleRefresh = () => {
     setLoading(true);
@@ -93,11 +124,16 @@ const PropertiesPage = () => {
           
           <Button
             variant="outline"
-            onClick={handleSyncPMS}
+            onClick={handleSync}
+            disabled={isSyncing}
             className="flex items-center"
           >
-            <Plug className="w-4 h-4 mr-2" />
-            Sync with PMS
+            {isSyncing ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Plug className="w-4 h-4 mr-2" />
+            )}
+            {isSyncing ? 'Syncing...' : 'Sync with PMS'}
           </Button>
           
           <Button
@@ -119,7 +155,7 @@ const PropertiesPage = () => {
       ) : properties.length === 0 ? (
         <EmptyState 
           onAddProperty={() => setIsAddModalOpen(true)}
-          onSyncPMS={handleSyncPMS}
+          onSyncPMS={handleSync}
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

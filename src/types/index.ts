@@ -1,11 +1,23 @@
-
 export interface Tenant {
   id: string;
   name: string;
   logo_url?: string;
-  primary_color: string;
   created_at: string;
   status: 'active' | 'inactive';
+  
+  // Business information
+  contact_email?: string;
+  phone_number?: string;
+  address?: string;
+  website?: string;
+  vat_number?: string;
+  
+  // Advanced branding
+  brand_color_primary: string;
+  brand_color_secondary: string;
+  brand_color_background: string;
+  brand_color_text: string;
+  brand_font_family: string;
 }
 
 export interface UserProfile {

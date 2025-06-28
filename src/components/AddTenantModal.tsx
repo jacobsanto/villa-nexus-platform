@@ -17,7 +17,7 @@ const AddTenantModal = ({ isOpen, onClose, onTenantAdded }: AddTenantModalProps)
   const [formData, setFormData] = useState({
     name: '',
     logoUrl: '',
-    primaryColor: '#0ea5e9'
+    brandColorPrimary: '#4f46e5'
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +35,7 @@ const AddTenantModal = ({ isOpen, onClose, onTenantAdded }: AddTenantModalProps)
           {
             name: formData.name,
             logo_url: formData.logoUrl || null,
-            primary_color: formData.primaryColor,
+            brand_color_primary: formData.brandColorPrimary,
             status: 'active'
           }
         ]);
@@ -53,7 +53,7 @@ const AddTenantModal = ({ isOpen, onClose, onTenantAdded }: AddTenantModalProps)
       setFormData({
         name: '',
         logoUrl: '',
-        primaryColor: '#0ea5e9'
+        brandColorPrimary: '#4f46e5'
       });
 
       onTenantAdded();
@@ -75,7 +75,7 @@ const AddTenantModal = ({ isOpen, onClose, onTenantAdded }: AddTenantModalProps)
     setFormData({
       name: '',
       logoUrl: '',
-      primaryColor: '#0ea5e9'
+      brandColorPrimary: '#4f46e5'
     });
     setError(null);
     onClose();
@@ -124,8 +124,8 @@ const AddTenantModal = ({ isOpen, onClose, onTenantAdded }: AddTenantModalProps)
             <Input
               id="primary-color"
               type="color"
-              value={formData.primaryColor}
-              onChange={(e) => setFormData({...formData, primaryColor: e.target.value})}
+              value={formData.brandColorPrimary}
+              onChange={(e) => setFormData({...formData, brandColorPrimary: e.target.value})}
               className="h-10"
             />
           </div>

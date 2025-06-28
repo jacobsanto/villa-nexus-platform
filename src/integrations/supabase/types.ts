@@ -530,28 +530,55 @@ export type Database = {
       }
       tenants: {
         Row: {
+          address: string | null
+          brand_color_background: string | null
+          brand_color_primary: string | null
+          brand_color_secondary: string | null
+          brand_color_text: string | null
+          brand_font_family: string | null
+          contact_email: string | null
           created_at: string
           id: string
           logo_url: string | null
           name: string
-          primary_color: string
+          phone_number: string | null
           status: string
+          vat_number: string | null
+          website: string | null
         }
         Insert: {
+          address?: string | null
+          brand_color_background?: string | null
+          brand_color_primary?: string | null
+          brand_color_secondary?: string | null
+          brand_color_text?: string | null
+          brand_font_family?: string | null
+          contact_email?: string | null
           created_at?: string
           id?: string
           logo_url?: string | null
           name: string
-          primary_color?: string
+          phone_number?: string | null
           status?: string
+          vat_number?: string | null
+          website?: string | null
         }
         Update: {
+          address?: string | null
+          brand_color_background?: string | null
+          brand_color_primary?: string | null
+          brand_color_secondary?: string | null
+          brand_color_text?: string | null
+          brand_font_family?: string | null
+          contact_email?: string | null
           created_at?: string
           id?: string
           logo_url?: string | null
           name?: string
-          primary_color?: string
+          phone_number?: string | null
           status?: string
+          vat_number?: string | null
+          website?: string | null
         }
         Relationships: []
       }

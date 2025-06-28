@@ -25,7 +25,7 @@ const TenantListItem = ({ tenant }: TenantListItemProps) => {
       <div className="flex items-center space-x-4">
         <div 
           className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-semibold"
-          style={{ backgroundColor: tenant.primary_color }}
+          style={{ backgroundColor: tenant.brand_color_primary }}
         >
           {tenant.name.charAt(0).toUpperCase()}
         </div>

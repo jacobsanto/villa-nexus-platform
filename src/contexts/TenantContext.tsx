@@ -20,21 +20,17 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const fetchTenant = async () => {
-      // Wait for auth to complete
-      if (authLoading) {
-        return;
-      }
-
-      // Super admins don't have tenants
-      if (profile?.role === 'super_admin') {
+      // Guard clause: Don't attempt to fetch tenant data if auth is loading, 
+      // no profile, or user is super_admin
+      if (authLoading || !profile || profile.role === 'super_admin') {
         setTenant(null);
         setLoading(false);
         setError(null);
         return;
       }
 
-      // No profile or no tenant_id
-      if (!profile?.tenant_id) {
+      // No tenant_id for this user
+      if (!profile.tenant_id) {
         setTenant(null);
         setLoading(false);
         setError(null);

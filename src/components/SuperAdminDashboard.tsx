@@ -1,70 +1,69 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Building2, Users, Settings, Eye } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Plus, Building2, Users, Settings, Eye, LogOut } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-
-interface Tenant {
-  id: string;
-  name: string;
-  logo?: string;
-  primaryColor: string;
-  guestyApiKey: string;
-  createdAt: string;
-  status: 'active' | 'inactive';
-  userCount: number;
-  propertyCount: number;
-}
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import AddTenantModal from "./AddTenantModal";
+import { Tenant } from "@/types";
 
 const SuperAdminDashboard = () => {
-  const [tenants, setTenants] = useState<Tenant[]>([
-    {
-      id: '1',
-      name: 'Coastal Properties',
-      primaryColor: '#0ea5e9',
-      guestyApiKey: 'encrypted_key_123',
-      createdAt: '2024-01-15',
-      status: 'active',
-      userCount: 12,
-      propertyCount: 45
-    },
-    {
-      id: '2',
-      name: 'Mountain View Rentals',
-      primaryColor: '#10b981',
-      guestyApiKey: 'encrypted_key_456',
-      createdAt: '2024-02-03',
-      status: 'active',
-      userCount: 8,
-      propertyCount: 23
+  const [tenants, setTenants] = useState<Tenant[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { signOut } = useAuth();
+  const { toast } = useToast();
+
+  const fetchTenants = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('tenants')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      // Cast the data to proper types
+      const typedTenants: Tenant[] = data.map(tenant => ({
+        ...tenant,
+        status: tenant.status as 'active' | 'inactive'
+      }));
+
+      setTenants(typedTenants);
+    } catch (error) {
+      console.error('Error fetching tenants:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load tenants",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
 
-  const [newTenant, setNewTenant] = useState({
-    name: '',
-    primaryColor: '#0ea5e9',
-    guestyApiKey: ''
-  });
+  useEffect(() => {
+    fetchTenants();
+  }, []);
 
-  const handleAddTenant = () => {
-    const tenant: Tenant = {
-      id: Date.now().toString(),
-      name: newTenant.name,
-      primaryColor: newTenant.primaryColor,
-      guestyApiKey: newTenant.guestyApiKey,
-      createdAt: new Date().toISOString().split('T')[0],
-      status: 'active',
-      userCount: 0,
-      propertyCount: 0
-    };
-
-    setTenants([...tenants, tenant]);
-    setNewTenant({ name: '', primaryColor: '#0ea5e9', guestyApiKey: '' });
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Error signing out:', error);
+      toast({
+        title: "Error",
+        description: "Failed to sign out",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -82,9 +81,15 @@ const SuperAdminDashboard = () => {
                 <p className="text-sm text-gray-500">Super Admin Panel</p>
               </div>
             </div>
-            <Badge variant="secondary" className="bg-green-100 text-green-800">
-              Super Admin
-            </Badge>
+            <div className="flex items-center space-x-4">
+              <Badge variant="secondary" className="bg-green-100 text-green-800">
+                Super Admin
+              </Badge>
+              <Button variant="outline" onClick={handleSignOut}>
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -110,7 +115,7 @@ const SuperAdminDashboard = () => {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{tenants.reduce((sum, t) => sum + t.userCount, 0)}</div>
+              <div className="text-2xl font-bold">-</div>
               <p className="text-xs text-muted-foreground">Across all tenants</p>
             </CardContent>
           </Card>
@@ -121,7 +126,7 @@ const SuperAdminDashboard = () => {
               <Building2 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{tenants.reduce((sum, t) => sum + t.propertyCount, 0)}</div>
+              <div className="text-2xl font-bold">-</div>
               <p className="text-xs text-muted-foreground">Managed properties</p>
             </CardContent>
           </Card>
@@ -135,110 +140,82 @@ const SuperAdminDashboard = () => {
                 <CardTitle>Tenant Management</CardTitle>
                 <CardDescription>Manage property management companies using your platform</CardDescription>
               </div>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Tenant
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Add New Tenant</DialogTitle>
-                    <DialogDescription>
-                      Create a new property management company account
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="tenant-name">Company Name</Label>
-                      <Input
-                        id="tenant-name"
-                        value={newTenant.name}
-                        onChange={(e) => setNewTenant({...newTenant, name: e.target.value})}
-                        placeholder="e.g., Coastal Properties"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="primary-color">Primary Brand Color</Label>
-                      <Input
-                        id="primary-color"
-                        type="color"
-                        value={newTenant.primaryColor}
-                        onChange={(e) => setNewTenant({...newTenant, primaryColor: e.target.value})}
-                        className="h-10"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="guesty-key">Guesty API Key</Label>
-                      <Input
-                        id="guesty-key"
-                        type="password"
-                        value={newTenant.guestyApiKey}
-                        onChange={(e) => setNewTenant({...newTenant, guestyApiKey: e.target.value})}
-                        placeholder="Enter encrypted API key"
-                      />
-                    </div>
-                  </div>
-                  <Button 
-                    onClick={handleAddTenant} 
-                    className="w-full"
-                    disabled={!newTenant.name || !newTenant.guestyApiKey}
-                  >
-                    Create Tenant
-                  </Button>
-                </DialogContent>
-              </Dialog>
+              <Button 
+                onClick={() => setIsModalOpen(true)}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Tenant
+              </Button>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {tenants.map((tenant) => (
-                <div key={tenant.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-slate-50 transition-colors">
-                  <div className="flex items-center space-x-4">
-                    <div 
-                      className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-semibold"
-                      style={{ backgroundColor: tenant.primaryColor }}
-                    >
-                      {tenant.name.charAt(0).toUpperCase()}
+            {loading ? (
+              <div className="text-center py-8">
+                <p className="text-gray-500">Loading tenants...</p>
+              </div>
+            ) : tenants.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-500">No tenants found. Add your first tenant to get started.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {tenants.map((tenant) => (
+                  <div key={tenant.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-slate-50 transition-colors">
+                    <div className="flex items-center space-x-4">
+                      <div 
+                        className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-semibold"
+                        style={{ backgroundColor: tenant.primary_color }}
+                      >
+                        {tenant.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900">{tenant.name}</h3>
+                        <p className="text-sm text-gray-500">
+                          Created {new Date(tenant.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{tenant.name}</h3>
-                      <p className="text-sm text-gray-500">Created {tenant.createdAt}</p>
+                    <div className="flex items-center space-x-6">
+                      <div className="text-center">
+                        <p className="text-sm font-medium text-gray-900">-</p>
+                        <p className="text-xs text-gray-500">Users</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm font-medium text-gray-900">-</p>
+                        <p className="text-xs text-gray-500">Properties</p>
+                      </div>
+                      <Badge 
+                        variant={tenant.status === 'active' ? 'default' : 'secondary'}
+                        className={tenant.status === 'active' ? 'bg-green-100 text-green-800' : ''}
+                      >
+                        {tenant.status}
+                      </Badge>
+                      <div className="flex space-x-2">
+                        <Button variant="outline" size="sm">
+                          <Eye className="w-4 h-4 mr-1" />
+                          View
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <Settings className="w-4 h-4 mr-1" />
+                          Settings
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-6">
-                    <div className="text-center">
-                      <p className="text-sm font-medium text-gray-900">{tenant.userCount}</p>
-                      <p className="text-xs text-gray-500">Users</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm font-medium text-gray-900">{tenant.propertyCount}</p>
-                      <p className="text-xs text-gray-500">Properties</p>
-                    </div>
-                    <Badge 
-                      variant={tenant.status === 'active' ? 'default' : 'secondary'}
-                      className={tenant.status === 'active' ? 'bg-green-100 text-green-800' : ''}
-                    >
-                      {tenant.status}
-                    </Badge>
-                    <div className="flex space-x-2">
-                      <Button variant="outline" size="sm">
-                        <Eye className="w-4 h-4 mr-1" />
-                        View
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <Settings className="w-4 h-4 mr-1" />
-                        Settings
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
+
+      {/* Add Tenant Modal */}
+      <AddTenantModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onTenantAdded={fetchTenants}
+      />
     </div>
   );
 };

@@ -17,11 +17,13 @@ const LoginPage = () => {
     password: '',
     fullName: ''
   });
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
@@ -30,6 +32,7 @@ const LoginPage = () => {
       });
 
       if (error) {
+        setError(error.message);
         toast({
           title: "Login Failed",
           description: error.message,
@@ -37,9 +40,11 @@ const LoginPage = () => {
         });
       }
     } catch (error) {
+      const errorMessage = "An unexpected error occurred";
+      setError(errorMessage);
       toast({
         title: "Login Failed",
-        description: "An unexpected error occurred",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -50,6 +55,7 @@ const LoginPage = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
     try {
       const { error } = await supabase.auth.signUp({
@@ -64,6 +70,7 @@ const LoginPage = () => {
       });
 
       if (error) {
+        setError(error.message);
         toast({
           title: "Sign Up Failed",
           description: error.message,
@@ -76,9 +83,11 @@ const LoginPage = () => {
         });
       }
     } catch (error) {
+      const errorMessage = "An unexpected error occurred";
+      setError(errorMessage);
       toast({
         title: "Sign Up Failed",
-        description: "An unexpected error occurred",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -105,6 +114,12 @@ const LoginPage = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {error && (
+              <div className="mb-4 text-sm text-red-600 bg-red-50 p-3 rounded-md">
+                {error}
+              </div>
+            )}
+            
             <Tabs defaultValue="login" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="login">Login</TabsTrigger>
@@ -125,6 +140,7 @@ const LoginPage = () => {
                         onChange={(e) => setCredentials({...credentials, email: e.target.value})}
                         className="pl-10"
                         required
+                        disabled={loading}
                       />
                     </div>
                   </div>
@@ -141,11 +157,13 @@ const LoginPage = () => {
                         onChange={(e) => setCredentials({...credentials, password: e.target.value})}
                         className="pl-10 pr-10"
                         required
+                        disabled={loading}
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                        disabled={loading}
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
@@ -169,6 +187,7 @@ const LoginPage = () => {
                       value={credentials.fullName}
                       onChange={(e) => setCredentials({...credentials, fullName: e.target.value})}
                       required
+                      disabled={loading}
                     />
                   </div>
                   
@@ -184,6 +203,7 @@ const LoginPage = () => {
                         onChange={(e) => setCredentials({...credentials, email: e.target.value})}
                         className="pl-10"
                         required
+                        disabled={loading}
                       />
                     </div>
                   </div>
@@ -200,11 +220,13 @@ const LoginPage = () => {
                         onChange={(e) => setCredentials({...credentials, password: e.target.value})}
                         className="pl-10 pr-10"
                         required
+                        disabled={loading}
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                        disabled={loading}
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>

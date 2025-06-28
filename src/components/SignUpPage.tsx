@@ -10,6 +10,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import LoginPageHeader from "./LoginPageHeader";
 
+interface TenantCreationResult {
+  success: boolean;
+  tenant_id?: string;
+  user_id?: string;
+  error?: string;
+}
+
 const SignUpPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -47,7 +54,10 @@ const SignUpPage = () => {
 
       console.log('✅ Tenant creation result:', data);
 
-      if (data?.success) {
+      // Type assertion to properly handle the JSON response
+      const result = data as TenantCreationResult;
+
+      if (result?.success) {
         setSuccess(true);
         toast({
           title: "Sign Up Successful!",
@@ -67,7 +77,7 @@ const SignUpPage = () => {
           navigate('/login');
         }, 2000);
       } else {
-        const errorMessage = data?.error || 'An error occurred during sign up';
+        const errorMessage = result?.error || 'An error occurred during sign up';
         setError(errorMessage);
         toast({
           title: "Sign Up Failed",

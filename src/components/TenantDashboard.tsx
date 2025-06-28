@@ -8,6 +8,7 @@ import InventoryPage from "./InventoryPage";
 import IntegrationsPage from "./IntegrationsPage";
 import TasksPage from "./TasksPage";
 import SettingsPage from "./SettingsPage";
+import DamageReportsPage from "./DamageReportsPage";
 
 const TenantDashboard = () => {
   const [activePage, setActivePage] = useState('dashboard');
@@ -22,6 +23,8 @@ const TenantDashboard = () => {
         return <BookingsPage />;
       case 'inventory':
         return <InventoryPage />;
+      case 'damage-reports':
+        return <DamageReportsPage />;
       case 'integrations':
         return <IntegrationsPage />;
       case 'tasks':

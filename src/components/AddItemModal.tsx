@@ -33,7 +33,7 @@ const AddItemModal = ({ isOpen, onClose, onSuccess }: AddItemModalProps) => {
 
     setLoading(true);
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('inventory_items')
         .insert({
           tenant_id: tenant.id,

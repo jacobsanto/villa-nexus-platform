@@ -31,7 +31,7 @@ const StockLevelsView = () => {
     if (!tenant?.id) return;
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('stock_levels')
         .select('location')
         .eq('tenant_id', tenant.id)
@@ -39,7 +39,7 @@ const StockLevelsView = () => {
 
       if (error) throw error;
 
-      const uniqueLocations = [...new Set(data?.map(item => item.location) || [])];
+      const uniqueLocations = [...new Set((data || []).map((item: any) => item.location))];
       setLocations(uniqueLocations);
       
       if (uniqueLocations.length > 0 && !selectedLocation) {
@@ -54,7 +54,7 @@ const StockLevelsView = () => {
     if (!tenant?.id || !selectedLocation) return;
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('stock_levels')
         .select(`
           *,
@@ -66,14 +66,14 @@ const StockLevelsView = () => {
 
       if (error) throw error;
 
-      const formattedData = data?.map(item => ({
+      const formattedData = (data || []).map((item: any) => ({
         id: item.id,
         item_id: item.item_id,
         location: item.location,
         current_quantity: item.current_quantity,
         par_level: item.par_level,
-        item_name: (item.inventory_items as any).name
-      })) || [];
+        item_name: item.inventory_items.name
+      }));
 
       setStockLevels(formattedData);
     } catch (error) {
@@ -105,7 +105,7 @@ const StockLevelsView = () => {
       }));
 
       for (const update of updates) {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('stock_levels')
           .update({ current_quantity: update.current_quantity })
           .eq('id', update.id);

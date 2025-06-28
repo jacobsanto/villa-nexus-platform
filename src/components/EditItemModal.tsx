@@ -54,7 +54,7 @@ const EditItemModal = ({ isOpen, onClose, onSuccess, item }: EditItemModalProps)
 
     setLoading(true);
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('inventory_items')
         .update({
           name: formData.name,

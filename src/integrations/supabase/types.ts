@@ -93,6 +93,53 @@ export type Database = {
         }
         Relationships: []
       }
+      inventory_items: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          low_stock_threshold: number | null
+          name: string
+          supplier: string | null
+          tenant_id: string
+          unit_of_measure: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          low_stock_threshold?: number | null
+          name: string
+          supplier?: string | null
+          tenant_id: string
+          unit_of_measure?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          low_stock_threshold?: number | null
+          name?: string
+          supplier?: string | null
+          tenant_id?: string
+          unit_of_measure?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -229,6 +276,54 @@ export type Database = {
           },
           {
             foreignKeyName: "reports_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_levels: {
+        Row: {
+          created_at: string
+          current_quantity: number
+          id: string
+          item_id: string
+          location: string
+          par_level: number | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_quantity?: number
+          id?: string
+          item_id: string
+          location: string
+          par_level?: number | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_quantity?: number
+          id?: string
+          item_id?: string
+          location?: string
+          par_level?: number | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_levels_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_levels_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"

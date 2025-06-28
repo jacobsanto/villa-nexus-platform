@@ -29,7 +29,7 @@ const ItemCatalogView = () => {
     if (!tenant?.id) return;
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('inventory_items')
         .select('*')
         .eq('tenant_id', tenant.id)
@@ -51,7 +51,7 @@ const ItemCatalogView = () => {
 
   const handleDeleteItem = async (itemId: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('inventory_items')
         .delete()
         .eq('id', itemId);

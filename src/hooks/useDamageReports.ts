@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenant } from "@/contexts/TenantContext";
@@ -30,7 +29,13 @@ export const useDamageReports = () => {
       if (error) throw error;
 
       const typedReports: DamageReport[] = (data || []).map(report => ({
-        ...report,
+        id: report.id,
+        tenant_id: report.tenant_id,
+        property_id: report.property_id,
+        reported_by: report.reported_by,
+        description: report.description,
+        status: report.status as DamageReport['status'],
+        reported_at: report.reported_at,
         property_name: report.properties?.name,
         reporter_name: report.profiles?.full_name
       }));

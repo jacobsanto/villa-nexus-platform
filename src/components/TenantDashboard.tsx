@@ -14,15 +14,23 @@ import {
   LogOut,
   Menu
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useTenant } from "@/contexts/TenantContext";
 
 const TenantDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { profile, signOut } = useAuth();
+  const { tenant } = useTenant();
 
-  // Mock tenant data - would come from Supabase in real app
-  const tenant = {
-    name: 'Coastal Properties',
-    logo: null,
-    primaryColor: '#0ea5e9'
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
+  // Use real tenant data or fallback
+  const tenantData = tenant || {
+    name: 'Your Property Company',
+    logo_url: null,
+    primary_color: '#0ea5e9'
   };
 
   const stats = [
@@ -82,29 +90,32 @@ const TenantDashboard = () => {
               <div className="flex items-center space-x-3">
                 <div 
                   className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-semibold"
-                  style={{ backgroundColor: tenant.primaryColor }}
+                  style={{ backgroundColor: tenantData.primary_color }}
                 >
-                  {tenant.logo ? (
-                    <img src={tenant.logo} alt={tenant.name} className="w-6 h-6 rounded" />
+                  {tenantData.logo_url ? (
+                    <img src={tenantData.logo_url} alt={tenantData.name} className="w-6 h-6 rounded" />
                   ) : (
                     <Building2 className="w-5 h-5" />
                   )}
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-gray-900">{tenant.name}</h1>
+                  <h1 className="text-xl font-bold text-gray-900">{tenantData.name}</h1>
                   <p className="text-sm text-gray-500 hidden sm:block">Property Management Dashboard</p>
                 </div>
               </div>
             </div>
             
             <div className="flex items-center space-x-3">
+              <span className="text-sm text-gray-600 hidden sm:inline">
+                Welcome, {profile?.full_name}
+              </span>
               <Button variant="ghost" size="sm">
                 <Bell className="w-5 h-5" />
               </Button>
               <Button variant="ghost" size="sm">
                 <Settings className="w-5 h-5" />
               </Button>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" onClick={handleSignOut}>
                 <LogOut className="w-5 h-5" />
               </Button>
             </div>
@@ -151,7 +162,7 @@ const TenantDashboard = () => {
               <Button 
                 className="w-full justify-start" 
                 variant="outline"
-                style={{ borderColor: tenant.primaryColor, color: tenant.primaryColor }}
+                style={{ borderColor: tenantData.primary_color, color: tenantData.primary_color }}
               >
                 <Building2 className="mr-2 h-4 w-4" />
                 Add New Property
@@ -159,7 +170,7 @@ const TenantDashboard = () => {
               <Button 
                 className="w-full justify-start" 
                 variant="outline"
-                style={{ borderColor: tenant.primaryColor, color: tenant.primaryColor }}
+                style={{ borderColor: tenantData.primary_color, color: tenantData.primary_color }}
               >
                 <Calendar className="mr-2 h-4 w-4" />
                 View Calendar
@@ -167,7 +178,7 @@ const TenantDashboard = () => {
               <Button 
                 className="w-full justify-start" 
                 variant="outline"
-                style={{ borderColor: tenant.primaryColor, color: tenant.primaryColor }}
+                style={{ borderColor: tenantData.primary_color, color: tenantData.primary_color }}
               >
                 <Users className="mr-2 h-4 w-4" />
                 Manage Team
@@ -175,7 +186,7 @@ const TenantDashboard = () => {
               <Button 
                 className="w-full justify-start" 
                 variant="outline"
-                style={{ borderColor: tenant.primaryColor, color: tenant.primaryColor }}
+                style={{ borderColor: tenantData.primary_color, color: tenantData.primary_color }}
               >
                 <DollarSign className="mr-2 h-4 w-4" />
                 Financial Reports
@@ -195,7 +206,7 @@ const TenantDashboard = () => {
                   <div key={index} className="flex items-center space-x-4 p-3 rounded-lg hover:bg-slate-50">
                     <div 
                       className="w-2 h-2 rounded-full"
-                      style={{ backgroundColor: tenant.primaryColor }}
+                      style={{ backgroundColor: tenantData.primary_color }}
                     ></div>
                     <div className="flex-1">
                       <p className="text-sm font-medium text-gray-900">{activity.message}</p>

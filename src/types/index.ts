@@ -1,3 +1,4 @@
+
 export interface Tenant {
   id: string;
   name: string;
@@ -61,5 +62,21 @@ export interface Task {
   due_date?: string;
   task_type: string;
   assignee_name?: string; // This will be joined from profiles table
+  property_name?: string; // This will be joined from properties table
+}
+
+export interface Booking {
+  id: string;
+  created_at: string;
+  tenant_id: string;
+  property_id: string;
+  guest_name?: string;
+  check_in_date: string;
+  check_out_date: string;
+  number_of_guests?: number;
+  total_revenue?: number;
+  status: string;
+  source?: string;
+  external_id?: string;
   property_name?: string; // This will be joined from properties table
 }

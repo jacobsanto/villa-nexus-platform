@@ -1,16 +1,20 @@
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Building2, Plus } from "lucide-react";
+import { Plus, Plug, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Property } from "@/types";
+import PropertyCard from "./PropertyCard";
+import AddPropertyModal from "./AddPropertyModal";
+import EmptyState from "./EmptyState";
+import PropertySkeleton from "./PropertySkeleton";
 
 const PropertiesPage = () => {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const { profile } = useAuth();
   const { toast } = useToast();
 
@@ -54,75 +58,82 @@ const PropertiesPage = () => {
     fetchProperties();
   }, [profile?.tenant_id]);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'text-green-600';
-      case 'inactive':
-        return 'text-gray-600';
-      case 'maintenance':
-        return 'text-orange-600';
-      default:
-        return 'text-gray-600';
-    }
+  const handleSyncPMS = () => {
+    toast({
+      title: "Coming Soon",
+      description: "PMS sync functionality will be available soon!",
+    });
+  };
+
+  const handleRefresh = () => {
+    setLoading(true);
+    fetchProperties();
   };
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Manage Your Properties</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Properties</h1>
           <p className="text-gray-600 mt-2">
-            View, edit, and manage all your rental properties in one place.
+            Manage your property portfolio
           </p>
         </div>
-        <Button>
-          <Plus className="w-4 h-4 mr-2" />
-          Add Property
-        </Button>
+        
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            onClick={handleRefresh}
+            disabled={loading}
+            className="flex items-center"
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          
+          <Button
+            variant="outline"
+            onClick={handleSyncPMS}
+            className="flex items-center"
+          >
+            <Plug className="w-4 h-4 mr-2" />
+            Sync with PMS
+          </Button>
+          
+          <Button
+            onClick={() => setIsAddModalOpen(true)}
+            className="flex items-center"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Property
+          </Button>
+        </div>
       </div>
       
       {loading ? (
-        <div className="text-center py-8">
-          <p className="text-gray-500">Loading properties...</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {Array.from({ length: 8 }).map((_, index) => (
+            <PropertySkeleton key={index} />
+          ))}
         </div>
       ) : properties.length === 0 ? (
-        <div className="text-center py-8">
-          <p className="text-gray-500">No properties found. Add your first property to get started.</p>
-        </div>
+        <EmptyState 
+          onAddProperty={() => setIsAddModalOpen(true)}
+          onSyncPMS={handleSyncPMS}
+        />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {properties.map((property) => (
-            <Card key={property.id}>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Building2 className="w-5 h-5 mr-2" />
-                  {property.name}
-                </CardTitle>
-                <CardDescription>{property.address || 'No address provided'}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-1">
-                  <p className={`text-sm font-medium ${getStatusColor(property.status)}`}>
-                    Status: {property.status.charAt(0).toUpperCase() + property.status.slice(1)}
-                  </p>
-                  {property.nightly_rate && (
-                    <p className="text-sm text-gray-500">
-                      Rate: ${property.nightly_rate}/night
-                    </p>
-                  )}
-                  {property.bedrooms && (
-                    <p className="text-sm text-gray-500">
-                      {property.bedrooms} bed{property.bedrooms !== 1 ? 's' : ''}
-                      {property.bathrooms && `, ${property.bathrooms} bath${property.bathrooms !== 1 ? 's' : ''}`}
-                    </p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+            <PropertyCard key={property.id} property={property} />
           ))}
         </div>
       )}
+
+      <AddPropertyModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSuccess={fetchProperties}
+      />
     </div>
   );
 };

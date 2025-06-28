@@ -9,12 +9,14 @@ import KanbanColumn from "./KanbanColumn";
 import ViewSwitcher from "./ViewSwitcher";
 import TaskListView from "./TaskListView";
 import TaskAgendaView from "./TaskAgendaView";
+import AddTaskModal from "./AddTaskModal";
 import { Task } from "@/types";
 
 const TasksPage = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeView, setActiveView] = useState<'board' | 'list' | 'agenda'>('board');
+  const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   const { profile } = useAuth();
   const { toast } = useToast();
 
@@ -136,7 +138,7 @@ const TasksPage = () => {
         
         <div className="flex items-center gap-4">
           <ViewSwitcher activeView={activeView} setActiveView={setActiveView} />
-          <Button>
+          <Button onClick={() => setIsAddTaskModalOpen(true)}>
             <Plus className="w-4 h-4 mr-2" />
             Add Task
           </Button>
@@ -155,6 +157,12 @@ const TasksPage = () => {
           </div>
         </div>
       )}
+
+      <AddTaskModal 
+        isOpen={isAddTaskModalOpen}
+        onClose={() => setIsAddTaskModalOpen(false)}
+        onSuccess={fetchTasks}
+      />
     </div>
   );
 };

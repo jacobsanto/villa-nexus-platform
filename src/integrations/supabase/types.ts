@@ -651,12 +651,14 @@ export type Database = {
         Returns: string
       }
       handle_new_tenant: {
-        Args: {
-          company_name: string
-          user_email: string
-          user_password: string
-          user_full_name: string
-        }
+        Args:
+          | { company_name: string }
+          | {
+              company_name: string
+              user_email: string
+              user_password: string
+              user_full_name: string
+            }
         Returns: Json
       }
     }

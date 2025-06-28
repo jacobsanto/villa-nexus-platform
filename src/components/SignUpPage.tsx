@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,6 @@ import LoginPageHeader from "./LoginPageHeader";
 interface TenantCreationResult {
   success: boolean;
   tenant_id?: string;
-  user_id?: string;
   error?: string;
 }
 
@@ -36,68 +36,84 @@ const SignUpPage = () => {
     setError(null);
 
     try {
-      console.log('🚀 Starting tenant creation process...');
+      console.log('🚀 Starting sign up process...');
       
-      // Call the new database function to create tenant and user atomically
-      const { data, error: rpcError } = await supabase.rpc('handle_new_tenant', {
-        company_name: formData.companyName,
-        user_email: formData.email,
-        user_password: formData.password,
-        user_full_name: formData.fullName
+      // Step 1: Create the tenant first
+      const { data: tenantData, error: tenantError } = await supabase.rpc('handle_new_tenant', {
+        company_name: formData.companyName
       });
 
-      if (rpcError) {
-        console.error('❌ RPC Error:', rpcError);
-        throw rpcError;
+      if (tenantError) {
+        console.error('❌ Tenant creation error:', tenantError);
+        throw tenantError;
       }
 
-      console.log('✅ Tenant creation result:', data);
-
-      // Safely parse the JSON response with proper type checking
-      let result: TenantCreationResult;
+      // Parse tenant result
+      let tenantResult: TenantCreationResult;
       try {
-        // First cast to unknown, then check if it's a valid result object
-        const unknownData = data as unknown;
-        if (typeof unknownData === 'object' && unknownData !== null && !Array.isArray(unknownData)) {
-          result = unknownData as TenantCreationResult;
-        } else if (typeof data === 'string') {
-          result = JSON.parse(data) as TenantCreationResult;
+        if (typeof tenantData === 'object' && tenantData !== null) {
+          tenantResult = tenantData as TenantCreationResult;
+        } else if (typeof tenantData === 'string') {
+          tenantResult = JSON.parse(tenantData) as TenantCreationResult;
         } else {
-          throw new Error('Invalid response format from server');
+          throw new Error('Invalid tenant creation response');
         }
       } catch (parseError) {
-        console.error('❌ Error parsing result:', parseError);
+        console.error('❌ Error parsing tenant result:', parseError);
         throw new Error('Invalid response format from server');
       }
 
-      if (result?.success) {
-        setSuccess(true);
-        toast({
-          title: "Sign Up Successful!",
-          description: "Your account and company have been created. Please log in.",
-        });
-        
-        // Reset form
-        setFormData({
-          email: '',
-          password: '',
-          fullName: '',
-          companyName: ''
-        });
-        
-        // Navigate to login after a short delay
-        setTimeout(() => {
-          navigate('/login');
-        }, 2000);
-      } else {
-        const errorMessage = result?.error || 'An error occurred during sign up';
-        setError(errorMessage);
-        toast({
-          title: "Sign Up Failed",
-          description: errorMessage,
-          variant: "destructive",
-        });
+      if (!tenantResult?.success || !tenantResult.tenant_id) {
+        const errorMessage = tenantResult?.error || 'Failed to create company';
+        throw new Error(errorMessage);
       }
+
+      console.log('✅ Tenant created successfully:', tenantResult.tenant_id);
+
+      // Step 2: Create the user with tenant metadata
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            full_name: formData.fullName,
+            role: 'admin',
+            tenant_id: tenantResult.tenant_id
+          }
+        }
+      });
+
+      if (authError) {
+        console.error('❌ Auth error:', authError);
+        throw authError;
+      }
+
+      if (!authData.user) {
+        throw new Error('User creation failed');
+      }
+
+      console.log('✅ User created successfully:', authData.user.id);
+
+      setSuccess(true);
+      toast({
+        title: "Sign Up Successful!",
+        description: "Your account and company have been created. Please log in.",
+      });
+      
+      // Reset form
+      setFormData({
+        email: '',
+        password: '',
+        fullName: '',
+        companyName: ''
+      });
+      
+      // Navigate to login after a short delay
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
+
     } catch (error) {
       console.error('💥 Sign up error:', error);
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';

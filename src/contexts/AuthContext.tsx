@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { UserProfile } from '@/types';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthContextType {
   user: User | null;
@@ -20,6 +21,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   // Derive role directly from profile
   const role = profile?.role || null;
@@ -48,6 +50,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Handle navigation after successful authentication
+  const handleAuthNavigation = (userProfile: UserProfile | null) => {
+    if (!userProfile) return;
+
+    const currentPath = window.location.pathname;
+    
+    // If user is on login pages, redirect them based on their role
+    if (currentPath === '/login' || currentPath === '/admin') {
+      if (userProfile.role === 'super_admin') {
+        navigate('/super-admin/dashboard', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
+    }
+  };
+
   useEffect(() => {
     let mounted = true;
 
@@ -66,6 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const profileData = await fetchProfile(currentSession.user.id);
           if (mounted) {
             setProfile(profileData);
+            handleAuthNavigation(profileData);
             setLoading(false); // Only set loading to false after profile is fetched
           }
         } else {
@@ -103,6 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const profileData = await fetchProfile(session.user.id);
           if (mounted) {
             setProfile(profileData);
+            handleAuthNavigation(profileData);
             setLoading(false); // Only set loading to false after profile is fetched
           }
         } else {
@@ -123,7 +143,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [navigate]);
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();

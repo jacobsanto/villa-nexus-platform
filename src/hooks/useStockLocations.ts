@@ -20,7 +20,7 @@ export const useStockLocations = () => {
 
       if (error) throw error;
 
-      const uniqueLocations: string[] = [...new Set((data || []).map((item: any) => item.location))].filter(Boolean);
+      const uniqueLocations: string[] = [...new Set((data || []).map((item: any) => item.location as string))].filter(Boolean);
       setLocations(uniqueLocations);
       
       if (uniqueLocations.length > 0 && !selectedLocation) {

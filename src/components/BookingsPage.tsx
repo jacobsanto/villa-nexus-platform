@@ -59,7 +59,18 @@ const BookingsPage = () => {
         throw error;
       }
 
-      setBookings(data);
+      // Map database field names to interface field names
+      const mappedBookings: Booking[] = data.map(booking => ({
+        id: booking.id,
+        property_id: booking.property_id,
+        guest_name: booking.guest_name || '',
+        check_in: booking.check_in_date,
+        check_out: booking.check_out_date,
+        number_of_guests: booking.number_of_guests || 1,
+        status: booking.status as 'confirmed' | 'pending' | 'cancelled'
+      }));
+
+      setBookings(mappedBookings);
     } catch (error) {
       console.error('Error fetching bookings:', error);
       toast({
@@ -129,9 +140,6 @@ const BookingsPage = () => {
                   <Input id="username" value="@peduarte" className="col-span-3" />
                 </div>
               </div>
-              {/*<DialogFooter>
-                <Button type="submit">Save changes</Button>
-              </DialogFooter>*/}
             </DialogContent>
           </Dialog>
         </div>

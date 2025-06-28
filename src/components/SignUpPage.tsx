@@ -4,8 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, Lock, Eye, EyeOff, User } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Mail, Lock, Eye, EyeOff, User, Building2 } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import LoginPageHeader from "./LoginPageHeader";
@@ -13,14 +13,16 @@ import LoginPageHeader from "./LoginPageHeader";
 const SignUpPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [credentials, setCredentials] = useState({
+  const [formData, setFormData] = useState({
     email: '',
     password: '',
-    fullName: ''
+    fullName: '',
+    companyName: ''
   });
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,34 +30,54 @@ const SignUpPage = () => {
     setError(null);
 
     try {
-      const { error } = await supabase.auth.signUp({
-        email: credentials.email,
-        password: credentials.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-          data: {
-            full_name: credentials.fullName,
-            role: 'admin'
-          },
-        },
+      console.log('🚀 Starting tenant creation process...');
+      
+      // Call the new database function to create tenant and user atomically
+      const { data, error: rpcError } = await supabase.rpc('handle_new_tenant', {
+        company_name: formData.companyName,
+        user_email: formData.email,
+        user_password: formData.password,
+        user_full_name: formData.fullName
       });
 
-      if (error) {
-        setError(error.message);
-        toast({
-          title: "Sign Up Failed",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else {
+      if (rpcError) {
+        console.error('❌ RPC Error:', rpcError);
+        throw rpcError;
+      }
+
+      console.log('✅ Tenant creation result:', data);
+
+      if (data?.success) {
         setSuccess(true);
         toast({
-          title: "Sign Up Successful",
-          description: "Please check your email for a verification link",
+          title: "Sign Up Successful!",
+          description: "Your account and company have been created. Please log in.",
+        });
+        
+        // Reset form
+        setFormData({
+          email: '',
+          password: '',
+          fullName: '',
+          companyName: ''
+        });
+        
+        // Navigate to login after a short delay
+        setTimeout(() => {
+          navigate('/login');
+        }, 2000);
+      } else {
+        const errorMessage = data?.error || 'An error occurred during sign up';
+        setError(errorMessage);
+        toast({
+          title: "Sign Up Failed",
+          description: errorMessage,
+          variant: "destructive",
         });
       }
     } catch (error) {
-      const errorMessage = "An unexpected error occurred";
+      console.error('💥 Sign up error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
       setError(errorMessage);
       toast({
         title: "Sign Up Failed",
@@ -74,15 +96,15 @@ const SignUpPage = () => {
           <LoginPageHeader />
           <Card className="shadow-lg border-0">
             <CardHeader className="space-y-1">
-              <CardTitle className="text-xl text-center">Check Your Email</CardTitle>
+              <CardTitle className="text-xl text-center">Account Created!</CardTitle>
               <CardDescription className="text-center">
-                We've sent you a verification link. Please check your email and click the link to activate your account.
+                Your company and account have been successfully created. You can now sign in.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-center">
                 <Link to="/login" className="text-blue-600 hover:underline">
-                  Back to Sign In
+                  Go to Sign In
                 </Link>
               </div>
             </CardContent>
@@ -99,9 +121,9 @@ const SignUpPage = () => {
 
         <Card className="shadow-lg border-0">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-xl text-center">Create Account</CardTitle>
+            <CardTitle className="text-xl text-center">Create Your Account</CardTitle>
             <CardDescription className="text-center">
-              Sign up to get started
+              Start your property management journey
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -113,6 +135,23 @@ const SignUpPage = () => {
             
             <form onSubmit={handleSignUp} className="space-y-4">
               <div className="space-y-2">
+                <Label htmlFor="companyName">Company Name</Label>
+                <div className="relative">
+                  <Building2 className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="companyName"
+                    type="text"
+                    placeholder="Enter your company name"
+                    value={formData.companyName}
+                    onChange={(e) => setFormData({...formData, companyName: e.target.value})}
+                    className="pl-10"
+                    required
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="fullName">Full Name</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -120,8 +159,8 @@ const SignUpPage = () => {
                     id="fullName"
                     type="text"
                     placeholder="Enter your full name"
-                    value={credentials.fullName}
-                    onChange={(e) => setCredentials({...credentials, fullName: e.target.value})}
+                    value={formData.fullName}
+                    onChange={(e) => setFormData({...formData, fullName: e.target.value})}
                     className="pl-10"
                     required
                     disabled={loading}
@@ -137,8 +176,8 @@ const SignUpPage = () => {
                     id="email"
                     type="email"
                     placeholder="Enter your email"
-                    value={credentials.email}
-                    onChange={(e) => setCredentials({...credentials, email: e.target.value})}
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
                     className="pl-10"
                     required
                     disabled={loading}
@@ -154,8 +193,8 @@ const SignUpPage = () => {
                     id="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="Create a password"
-                    value={credentials.password}
-                    onChange={(e) => setCredentials({...credentials, password: e.target.value})}
+                    value={formData.password}
+                    onChange={(e) => setFormData({...formData, password: e.target.value})}
                     className="pl-10 pr-10"
                     required
                     disabled={loading}

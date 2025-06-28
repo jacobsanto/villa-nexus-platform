@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import LoginPageHeader from "./LoginPageHeader";
@@ -18,26 +18,38 @@ const LoginPage = () => {
     password: ''
   });
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      console.log('🔐 Attempting login...');
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: credentials.email,
         password: credentials.password,
       });
 
       if (error) {
+        console.error('❌ Login error:', error);
         toast({
           title: "Login Failed",
           description: error.message,
           variant: "destructive",
         });
+      } else if (data?.user) {
+        console.log('✅ Login successful, navigating to dashboard...');
+        toast({
+          title: "Welcome back!",
+          description: "Successfully signed in.",
+        });
+        
+        // Navigate immediately to dashboard - AuthContext will handle role-based routing
+        navigate('/dashboard', { replace: true });
       }
-      // Remove immediate navigation - let AuthContext handle it
     } catch (error) {
+      console.error('💥 Login exception:', error);
       toast({
         title: "Login Failed",
         description: "An unexpected error occurred",

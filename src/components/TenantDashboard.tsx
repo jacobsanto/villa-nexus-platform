@@ -3,6 +3,7 @@ import { useState } from "react";
 import TenantSidebar from "./TenantSidebar";
 import DashboardPage from "./DashboardPage";
 import PropertiesPage from "./PropertiesPage";
+import BookingsPage from "./BookingsPage";
 import IntegrationsPage from "./IntegrationsPage";
 import TasksPage from "./TasksPage";
 import SettingsPage from "./SettingsPage";
@@ -16,6 +17,8 @@ const TenantDashboard = () => {
         return <DashboardPage />;
       case 'properties':
         return <PropertiesPage />;
+      case 'bookings':
+        return <BookingsPage />;
       case 'integrations':
         return <IntegrationsPage />;
       case 'tasks':

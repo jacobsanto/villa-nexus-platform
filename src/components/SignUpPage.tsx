@@ -53,10 +53,18 @@ const SignUpPage = () => {
 
       console.log('✅ Tenant creation result:', data);
 
-      // Safely parse the JSON response
+      // Safely parse the JSON response with proper type checking
       let result: TenantCreationResult;
       try {
-        result = typeof data === 'string' ? JSON.parse(data) : data as TenantCreationResult;
+        // First cast to unknown, then check if it's a valid result object
+        const unknownData = data as unknown;
+        if (typeof unknownData === 'object' && unknownData !== null && !Array.isArray(unknownData)) {
+          result = unknownData as TenantCreationResult;
+        } else if (typeof data === 'string') {
+          result = JSON.parse(data) as TenantCreationResult;
+        } else {
+          throw new Error('Invalid response format from server');
+        }
       } catch (parseError) {
         console.error('❌ Error parsing result:', parseError);
         throw new Error('Invalid response format from server');

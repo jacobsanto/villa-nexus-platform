@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,7 @@ const LoginPage = () => {
           variant: "destructive",
         });
       } else {
+        // Immediately navigate after successful sign-in
         navigate('/dashboard', { replace: true });
       }
     } catch (error) {

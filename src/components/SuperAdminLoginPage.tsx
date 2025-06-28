@@ -36,6 +36,7 @@ const SuperAdminLoginPage = () => {
           variant: "destructive",
         });
       } else {
+        // Immediately navigate after successful sign-in
         navigate('/super-admin/dashboard', { replace: true });
       }
     } catch (error) {

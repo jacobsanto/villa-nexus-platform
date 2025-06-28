@@ -8,6 +8,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   profile: UserProfile | null;
+  role: 'admin' | 'member' | 'super_admin' | null;
   loading: boolean;
   signOut: () => Promise<void>;
 }
@@ -19,6 +20,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Derive role directly from profile
+  const role = profile?.role || null;
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -58,15 +62,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setSession(currentSession);
           setUser(currentSession.user);
           
-          // Fetch profile
+          // Fetch profile and only set loading to false after both session and profile are ready
           const profileData = await fetchProfile(currentSession.user.id);
           if (mounted) {
             setProfile(profileData);
+            setLoading(false); // Only set loading to false after profile is fetched
           }
         } else {
           setSession(null);
           setUser(null);
           setProfile(null);
+          if (mounted) {
+            setLoading(false);
+          }
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
@@ -74,9 +82,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setSession(null);
           setUser(null);
           setProfile(null);
-        }
-      } finally {
-        if (mounted) {
           setLoading(false);
         }
       }
@@ -92,12 +97,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (session?.user) {
           setSession(session);
           setUser(session.user);
+          setLoading(true); // Set loading to true while fetching profile
           
           // Fetch profile for authenticated user
           const profileData = await fetchProfile(session.user.id);
           if (mounted) {
             setProfile(profileData);
-            setLoading(false);
+            setLoading(false); // Only set loading to false after profile is fetched
           }
         } else {
           setSession(null);
@@ -130,6 +136,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     session,
     profile,
+    role,
     loading,
     signOut,
   };

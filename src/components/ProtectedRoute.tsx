@@ -17,9 +17,18 @@ const ProtectedRoute = ({ children, role, or_role }: ProtectedRouteProps) => {
     return <LoadingScreen />;
   }
 
-  // Redirect to login if not authenticated
+  // Redirect to appropriate login if not authenticated
   if (!session) {
+    // Determine which login page based on current route
+    if (window.location.pathname.startsWith('/super-admin')) {
+      return <Navigate to="/admin" replace />;
+    }
     return <Navigate to="/login" replace />;
+  }
+
+  // If session exists but profile is still loading, show loading screen
+  if (!profile) {
+    return <LoadingScreen />;
   }
 
   // If no role is specified, just check for authentication
@@ -28,12 +37,12 @@ const ProtectedRoute = ({ children, role, or_role }: ProtectedRouteProps) => {
   }
 
   // Check if user has the required role
-  if (profile?.role === role || (or_role && profile?.role === or_role)) {
+  if (profile.role === role || (or_role && profile.role === or_role)) {
     return <>{children}</>;
   }
 
   // Redirect based on user's actual role
-  if (profile?.role === 'super_admin') {
+  if (profile.role === 'super_admin') {
     return <Navigate to="/super-admin/dashboard" replace />;
   } else {
     return <Navigate to="/dashboard" replace />;

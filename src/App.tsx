@@ -12,6 +12,7 @@ import SuperAdminDashboard from "@/components/SuperAdminDashboard";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import SuperAdminRoute from "@/components/SuperAdminRoute";
 import RootRedirect from "@/components/RootRedirect";
+import AppLayout from "@/components/AppLayout";
 
 const queryClient = new QueryClient();
 
@@ -24,24 +25,29 @@ const App = () => (
         <TenantProvider>
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<RootRedirect />} />
+              {/* Public routes */}
               <Route path="/login" element={<LoginPage />} />
-              <Route 
-                path="/dashboard" 
-                element={
-                  <ProtectedRoute>
-                    <TenantDashboard />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/super-admin" 
-                element={
-                  <SuperAdminRoute>
-                    <SuperAdminDashboard />
-                  </SuperAdminRoute>
-                } 
-              />
+              
+              {/* Protected routes */}
+              <Route path="/" element={<AppLayout />}>
+                <Route index element={<RootRedirect />} />
+                <Route 
+                  path="dashboard" 
+                  element={
+                    <ProtectedRoute>
+                      <TenantDashboard />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="super-admin" 
+                  element={
+                    <SuperAdminRoute>
+                      <SuperAdminDashboard />
+                    </SuperAdminRoute>
+                  } 
+                />
+              </Route>
             </Routes>
           </BrowserRouter>
         </TenantProvider>

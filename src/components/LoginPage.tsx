@@ -17,14 +17,12 @@ const LoginPage = () => {
     email: '',
     password: ''
   });
-  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
@@ -33,22 +31,19 @@ const LoginPage = () => {
       });
 
       if (error) {
-        setError(error.message);
         toast({
           title: "Login Failed",
           description: error.message,
           variant: "destructive",
         });
       } else {
-        // Immediately navigate to dashboard after successful login
+        // Navigate to dashboard after successful login
         navigate('/dashboard', { replace: true });
       }
     } catch (error) {
-      const errorMessage = "An unexpected error occurred";
-      setError(errorMessage);
       toast({
         title: "Login Failed",
-        description: errorMessage,
+        description: "An unexpected error occurred",
         variant: "destructive",
       });
     } finally {
@@ -69,12 +64,6 @@ const LoginPage = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {error && (
-              <div className="mb-4 text-sm text-red-600 bg-red-50 p-3 rounded-md">
-                {error}
-              </div>
-            )}
-            
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>

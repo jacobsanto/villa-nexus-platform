@@ -12,10 +12,12 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { loading, session, profile } = useAuth();
 
+  // Show loading screen while auth is loading
   if (loading) {
     return <LoadingScreen />;
   }
 
+  // Redirect to login if not authenticated
   if (!session) {
     return <Navigate to="/login" replace />;
   }
@@ -25,8 +27,13 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     return <>{children}</>;
   }
 
-  // Default behavior: render the appropriate dashboard based on role
-  if (profile?.role === 'super_admin') {
+  // Wait for profile to load before rendering dashboard
+  if (!profile) {
+    return <LoadingScreen />;
+  }
+
+  // Render the appropriate dashboard based on role
+  if (profile.role === 'super_admin') {
     return <SuperAdminDashboard />;
   }
 

@@ -7,6 +7,7 @@ import { useAuth } from './AuthContext';
 interface TenantContextType {
   tenant: Tenant | null;
   loading: boolean;
+  error: string | null;
 }
 
 const TenantContext = createContext<TenantContextType | undefined>(undefined);
@@ -14,28 +15,47 @@ const TenantContext = createContext<TenantContextType | undefined>(undefined);
 export function TenantProvider({ children }: { children: React.ReactNode }) {
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [loading, setLoading] = useState(true);
-  const { profile } = useAuth();
+  const [error, setError] = useState<string | null>(null);
+  const { profile, loading: authLoading } = useAuth();
 
   useEffect(() => {
     const fetchTenant = async () => {
+      // Wait for auth to complete
+      if (authLoading) {
+        return;
+      }
+
+      // Super admins don't have tenants
+      if (profile?.role === 'super_admin') {
+        setTenant(null);
+        setLoading(false);
+        setError(null);
+        return;
+      }
+
+      // No profile or no tenant_id
       if (!profile?.tenant_id) {
         setTenant(null);
         setLoading(false);
+        setError(null);
         return;
       }
 
       try {
-        const { data: tenantData, error } = await supabase
+        setLoading(true);
+        setError(null);
+        
+        const { data: tenantData, error: fetchError } = await supabase
           .from('tenants')
           .select('*')
           .eq('id', profile.tenant_id)
           .single();
 
-        if (error) {
-          console.error('Error fetching tenant:', error);
+        if (fetchError) {
+          console.error('Error fetching tenant:', fetchError);
+          setError('Failed to load tenant data');
           setTenant(null);
         } else {
-          // Cast the status to the proper type
           const typedTenant: Tenant = {
             ...tenantData,
             status: tenantData.status as 'active' | 'inactive'
@@ -49,6 +69,7 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (error) {
         console.error('Error fetching tenant:', error);
+        setError('Failed to load tenant data');
         setTenant(null);
       } finally {
         setLoading(false);
@@ -56,11 +77,12 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
     };
 
     fetchTenant();
-  }, [profile?.tenant_id]);
+  }, [profile, authLoading]);
 
   const value = {
     tenant,
     loading,
+    error,
   };
 
   return <TenantContext.Provider value={value}>{children}</TenantContext.Provider>;

@@ -1,13 +1,12 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building2, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import LoginPageHeader from "./LoginPageHeader";
+import LoginForm from "./LoginForm";
+import SignUpForm from "./SignUpForm";
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -98,13 +97,7 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 p-4">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold text-xl mb-4">
-            <Building2 className="w-8 h-8" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Arivio</h1>
-          <p className="text-gray-600">Property Management Platform</p>
-        </div>
+        <LoginPageHeader />
 
         <Card className="shadow-lg border-0">
           <CardHeader className="space-y-1">
@@ -127,116 +120,31 @@ const LoginPage = () => {
               </TabsList>
               
               <TabsContent value="login">
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="login-email">Email</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="login-email"
-                        type="email"
-                        placeholder="Enter your email"
-                        value={credentials.email}
-                        onChange={(e) => setCredentials({...credentials, email: e.target.value})}
-                        className="pl-10"
-                        required
-                        disabled={loading}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="login-password">Password</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="login-password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Enter your password"
-                        value={credentials.password}
-                        onChange={(e) => setCredentials({...credentials, password: e.target.value})}
-                        className="pl-10 pr-10"
-                        required
-                        disabled={loading}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
-                        disabled={loading}
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? "Signing In..." : "Sign In"}
-                  </Button>
-                </form>
+                <LoginForm
+                  email={credentials.email}
+                  password={credentials.password}
+                  showPassword={showPassword}
+                  loading={loading}
+                  onEmailChange={(email) => setCredentials({...credentials, email})}
+                  onPasswordChange={(password) => setCredentials({...credentials, password})}
+                  onTogglePassword={() => setShowPassword(!showPassword)}
+                  onSubmit={handleLogin}
+                />
               </TabsContent>
               
               <TabsContent value="signup">
-                <form onSubmit={handleSignUp} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-name">Full Name</Label>
-                    <Input
-                      id="signup-name"
-                      type="text"
-                      placeholder="Enter your full name"
-                      value={credentials.fullName}
-                      onChange={(e) => setCredentials({...credentials, fullName: e.target.value})}
-                      required
-                      disabled={loading}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="signup-email"
-                        type="email"
-                        placeholder="Enter your email"
-                        value={credentials.email}
-                        onChange={(e) => setCredentials({...credentials, email: e.target.value})}
-                        className="pl-10"
-                        required
-                        disabled={loading}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password">Password</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="signup-password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Create a password"
-                        value={credentials.password}
-                        onChange={(e) => setCredentials({...credentials, password: e.target.value})}
-                        className="pl-10 pr-10"
-                        required
-                        disabled={loading}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
-                        disabled={loading}
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? "Creating Account..." : "Create Account"}
-                  </Button>
-                </form>
+                <SignUpForm
+                  email={credentials.email}
+                  password={credentials.password}
+                  fullName={credentials.fullName}
+                  showPassword={showPassword}
+                  loading={loading}
+                  onEmailChange={(email) => setCredentials({...credentials, email})}
+                  onPasswordChange={(password) => setCredentials({...credentials, password})}
+                  onFullNameChange={(fullName) => setCredentials({...credentials, fullName})}
+                  onTogglePassword={() => setShowPassword(!showPassword)}
+                  onSubmit={handleSignUp}
+                />
               </TabsContent>
             </Tabs>
           </CardContent>

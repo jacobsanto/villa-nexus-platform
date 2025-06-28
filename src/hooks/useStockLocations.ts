@@ -12,7 +12,7 @@ export const useStockLocations = () => {
     if (!tenant?.id) return;
 
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('stock_levels')
         .select('location')
         .eq('tenant_id', tenant.id)
@@ -20,7 +20,7 @@ export const useStockLocations = () => {
 
       if (error) throw error;
 
-      const uniqueLocations: string[] = [...new Set((data || []).map((item: any) => item.location as string))].filter(Boolean);
+      const uniqueLocations: string[] = [...new Set((data || []).map((item: { location: string; }) => item.location))].filter(Boolean);
       setLocations(uniqueLocations);
       
       if (uniqueLocations.length > 0 && !selectedLocation) {

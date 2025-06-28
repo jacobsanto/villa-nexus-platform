@@ -31,7 +31,13 @@ const PropertiesPage = () => {
         throw error;
       }
 
-      setProperties(data || []);
+      // Cast the status to the proper type to fix TypeScript error
+      const typedProperties: Property[] = (data || []).map(property => ({
+        ...property,
+        status: property.status as 'active' | 'inactive' | 'maintenance'
+      }));
+
+      setProperties(typedProperties);
     } catch (error) {
       console.error('Error fetching properties:', error);
       toast({

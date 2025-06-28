@@ -2,10 +2,8 @@
 import { useState, useEffect } from "react";
 import { Building2, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Tenant } from "@/types";
-import SuperAdminHeader from "./SuperAdminHeader";
 import StatsCard from "./StatsCard";
 import TenantManagementSection from "./TenantManagementSection";
 import AddTenantModal from "./AddTenantModal";
@@ -14,7 +12,6 @@ const SuperAdminDashboard = () => {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { signOut } = useAuth();
   const { toast } = useToast();
 
   const fetchTenants = async () => {
@@ -51,19 +48,6 @@ const SuperAdminDashboard = () => {
     fetchTenants();
   }, []);
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-    } catch (error) {
-      console.error('Error signing out:', error);
-      toast({
-        title: "Error",
-        description: "Failed to sign out",
-        variant: "destructive",
-      });
-    }
-  };
-
   const statsData = [
     {
       title: "Total Tenants",
@@ -87,8 +71,6 @@ const SuperAdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <SuperAdminHeader onSignOut={handleSignOut} />
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {statsData.map((stat, index) => (

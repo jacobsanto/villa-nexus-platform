@@ -9,6 +9,7 @@ import InventoryPage from "./InventoryPage";
 import DamageReportsPage from "./DamageReportsPage";
 import IntegrationsPage from "./IntegrationsPage";
 import TasksPage from "./TasksPage";
+import TeamChatPage from "./TeamChatPage";
 import SettingsPage from "./SettingsPage";
 import LoadingScreen from "./LoadingScreen";
 import { useTenant } from "@/contexts/TenantContext";
@@ -33,6 +34,7 @@ const TenantAppContent = () => {
           <Route path="/damage-reports" element={<DamageReportsPage />} />
           <Route path="/integrations" element={<IntegrationsPage />} />
           <Route path="/tasks" element={<TasksPage />} />
+          <Route path="/team-chat" element={<TeamChatPage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Routes>
       </main>

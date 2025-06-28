@@ -1,5 +1,5 @@
 
-import { Building2, Home, ClipboardList, Settings, Plug, LogOut, User, Calendar, Package, AlertTriangle } from "lucide-react";
+import { Building2, Home, ClipboardList, Settings, Plug, LogOut, User, Calendar, Package, AlertTriangle, MessageCircle } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useTenant } from "@/contexts/TenantContext";
@@ -17,6 +17,7 @@ const TenantSidebar = () => {
     { id: 'damage-reports', name: 'Damage Reports', icon: AlertTriangle, path: '/damage-reports', roles: ['admin', 'member'] },
     { id: 'integrations', name: 'Integrations', icon: Plug, path: '/integrations', roles: ['admin', 'member'] },
     { id: 'tasks', name: 'Tasks', icon: ClipboardList, path: '/tasks', roles: ['admin', 'member'] },
+    { id: 'team-chat', name: 'Team Chat', icon: MessageCircle, path: '/team-chat', roles: ['admin', 'member'] },
     { id: 'settings', name: 'Settings', icon: Settings, path: '/settings', roles: ['admin'] },
   ];
 

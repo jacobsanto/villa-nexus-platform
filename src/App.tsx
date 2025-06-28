@@ -62,6 +62,11 @@ const App = () => (
                 <TenantApp />
               </ProtectedRoute>
             } />
+            <Route path="/team-chat/*" element={
+              <ProtectedRoute role="admin" or_role="member">
+                <TenantApp />
+              </ProtectedRoute>
+            } />
             <Route path="/settings/*" element={
               <ProtectedRoute role="admin">
                 <TenantApp />

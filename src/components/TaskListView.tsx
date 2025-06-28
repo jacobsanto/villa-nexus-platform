@@ -1,4 +1,3 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Calendar, User, MapPin } from "lucide-react";
@@ -15,9 +14,10 @@ import {
 
 interface TaskListViewProps {
   tasks: Task[];
+  onTaskClick?: (task: Task) => void;
 }
 
-const TaskListView = ({ tasks }: TaskListViewProps) => {
+const TaskListView = ({ tasks, onTaskClick }: TaskListViewProps) => {
   const getTaskTypeBadgeColor = (type: string) => {
     switch (type.toLowerCase()) {
       case 'housekeeping':
@@ -59,7 +59,13 @@ const TaskListView = ({ tasks }: TaskListViewProps) => {
       {/* Mobile View */}
       <div className="block md:hidden space-y-3">
         {tasks.map((task) => (
-          <div key={task.id} className="bg-white border rounded-lg p-4 cursor-pointer hover:shadow-md transition-shadow">
+          <div 
+            key={task.id} 
+            className={`bg-white border rounded-lg p-4 transition-shadow ${
+              onTaskClick ? 'cursor-pointer hover:shadow-md' : ''
+            }`}
+            onClick={onTaskClick ? () => onTaskClick(task) : undefined}
+          >
             <div className="flex justify-between items-start mb-2">
               <h3 className="font-semibold text-sm">{task.title}</h3>
               <Badge className={getStatusBadgeColor(task.status)}>
@@ -122,7 +128,11 @@ const TaskListView = ({ tasks }: TaskListViewProps) => {
           </TableHeader>
           <TableBody>
             {tasks.map((task) => (
-              <TableRow key={task.id} className="cursor-pointer hover:bg-gray-50">
+              <TableRow 
+                key={task.id} 
+                className={`${onTaskClick ? 'cursor-pointer hover:bg-gray-50' : ''}`}
+                onClick={onTaskClick ? () => onTaskClick(task) : undefined}
+              >
                 <TableCell className="font-medium">{task.title}</TableCell>
                 <TableCell>
                   <Badge className={getTaskTypeBadgeColor(task.task_type)}>

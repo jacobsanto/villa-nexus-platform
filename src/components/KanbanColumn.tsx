@@ -7,9 +7,10 @@ interface KanbanColumnProps {
   title: string;
   tasks: Task[];
   status: string;
+  onTaskClick?: (task: Task) => void;
 }
 
-const KanbanColumn = ({ title, tasks, status }: KanbanColumnProps) => {
+const KanbanColumn = ({ title, tasks, status, onTaskClick }: KanbanColumnProps) => {
   const getColumnColor = (status: string) => {
     switch (status) {
       case 'to-do':
@@ -36,7 +37,11 @@ const KanbanColumn = ({ title, tasks, status }: KanbanColumnProps) => {
       <CardContent className="pt-0">
         <div className="space-y-0 max-h-96 overflow-y-auto">
           {tasks.map((task) => (
-            <TaskCard key={task.id} task={task} />
+            <TaskCard 
+              key={task.id} 
+              task={task} 
+              onClick={onTaskClick ? () => onTaskClick(task) : undefined}
+            />
           ))}
           {tasks.length === 0 && (
             <div className="text-center text-gray-500 py-8">

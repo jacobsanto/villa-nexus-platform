@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -10,6 +9,7 @@ import ViewSwitcher from "./ViewSwitcher";
 import TaskListView from "./TaskListView";
 import TaskAgendaView from "./TaskAgendaView";
 import AddTaskModal from "./AddTaskModal";
+import TaskDetailModal from "./TaskDetailModal";
 import { Task } from "@/types";
 
 const TasksPage = () => {
@@ -17,6 +17,7 @@ const TasksPage = () => {
   const [loading, setLoading] = useState(true);
   const [activeView, setActiveView] = useState<'board' | 'list' | 'agenda'>('board');
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const { profile } = useAuth();
   const { toast } = useToast();
 
@@ -74,6 +75,10 @@ const TasksPage = () => {
     fetchTasks();
   }, [profile?.tenant_id]);
 
+  const handleViewTask = (task: Task) => {
+    setSelectedTask(task);
+  };
+
   const getTasksByStatus = (status: string) => {
     return tasks.filter(task => task.status === status);
   };
@@ -84,16 +89,19 @@ const TasksPage = () => {
         title="To-Do" 
         tasks={getTasksByStatus('to-do')} 
         status="to-do"
+        onTaskClick={handleViewTask}
       />
       <KanbanColumn 
         title="In Progress" 
         tasks={getTasksByStatus('in-progress')} 
         status="in-progress"
+        onTaskClick={handleViewTask}
       />
       <KanbanColumn 
         title="Done" 
         tasks={getTasksByStatus('done')} 
         status="done"
+        onTaskClick={handleViewTask}
       />
     </div>
   );
@@ -103,9 +111,9 @@ const TasksPage = () => {
       case 'board':
         return renderBoardView();
       case 'list':
-        return <TaskListView tasks={tasks} />;
+        return <TaskListView tasks={tasks} onTaskClick={handleViewTask} />;
       case 'agenda':
-        return <TaskAgendaView tasks={tasks} />;
+        return <TaskAgendaView tasks={tasks} onTaskClick={handleViewTask} />;
       default:
         return renderBoardView();
     }
@@ -162,6 +170,13 @@ const TasksPage = () => {
         isOpen={isAddTaskModalOpen}
         onClose={() => setIsAddTaskModalOpen(false)}
         onSuccess={fetchTasks}
+      />
+
+      <TaskDetailModal
+        isOpen={selectedTask !== null}
+        onClose={() => setSelectedTask(null)}
+        onSuccess={fetchTasks}
+        task={selectedTask}
       />
     </div>
   );

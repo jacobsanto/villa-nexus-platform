@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -56,7 +55,8 @@ const AddTaskModal = ({ isOpen, onClose, onSuccess }: AddTaskModalProps) => {
         .order('name');
 
       if (error) throw error;
-      setProperties(data || []);
+      // Type assertion to ensure compatibility with Property interface
+      setProperties((data || []) as Property[]);
     } catch (error) {
       console.error('Error fetching properties:', error);
     }
@@ -73,7 +73,8 @@ const AddTaskModal = ({ isOpen, onClose, onSuccess }: AddTaskModalProps) => {
         .order('full_name');
 
       if (error) throw error;
-      setTeamMembers(data || []);
+      // Type assertion to ensure compatibility with UserProfile interface
+      setTeamMembers((data || []) as UserProfile[]);
     } catch (error) {
       console.error('Error fetching team members:', error);
     }

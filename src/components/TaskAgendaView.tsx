@@ -1,4 +1,3 @@
-
 import { useMemo } from "react";
 import { isToday, isTomorrow, isThisWeek, isPast, parseISO } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +9,7 @@ import { useState } from "react";
 
 interface TaskAgendaViewProps {
   tasks: Task[];
+  onTaskClick?: (task: Task) => void;
 }
 
 interface TaskGroup {
@@ -18,7 +18,7 @@ interface TaskGroup {
   priority: number;
 }
 
-const TaskAgendaView = ({ tasks }: TaskAgendaViewProps) => {
+const TaskAgendaView = ({ tasks, onTaskClick }: TaskAgendaViewProps) => {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(["overdue", "today", "tomorrow"])
   );
@@ -156,7 +156,11 @@ const TaskAgendaView = ({ tasks }: TaskAgendaViewProps) => {
               <CardContent className="pt-0">
                 <div className="space-y-3">
                   {group.tasks.map((task) => (
-                    <TaskCard key={task.id} task={task} />
+                    <TaskCard 
+                      key={task.id} 
+                      task={task} 
+                      onClick={onTaskClick ? () => onTaskClick(task) : undefined}
+                    />
                   ))}
                 </div>
               </CardContent>

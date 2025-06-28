@@ -8,9 +8,10 @@ import { Task } from "@/types";
 
 interface TaskCardProps {
   task: Task;
+  onClick?: () => void;
 }
 
-const TaskCard = ({ task }: TaskCardProps) => {
+const TaskCard = ({ task, onClick }: TaskCardProps) => {
   const getTaskTypeBadgeColor = (type: string) => {
     switch (type.toLowerCase()) {
       case 'housekeeping':
@@ -29,7 +30,10 @@ const TaskCard = ({ task }: TaskCardProps) => {
   };
 
   return (
-    <Card className="mb-3 cursor-grab hover:shadow-md transition-shadow">
+    <Card 
+      className={`mb-3 transition-shadow ${onClick ? 'cursor-pointer hover:shadow-md' : 'cursor-grab'}`}
+      onClick={onClick}
+    >
       <CardContent className="p-4">
         <h3 className="font-semibold text-sm mb-2 line-clamp-2">{task.title}</h3>
         

@@ -35,11 +35,16 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
           console.error('Error fetching tenant:', error);
           setTenant(null);
         } else {
-          setTenant(tenantData);
+          // Cast the status to the proper type
+          const typedTenant: Tenant = {
+            ...tenantData,
+            status: tenantData.status as 'active' | 'inactive'
+          };
+          setTenant(typedTenant);
           
           // Apply tenant branding to CSS variables
-          if (tenantData?.primary_color) {
-            document.documentElement.style.setProperty('--tenant-primary', tenantData.primary_color);
+          if (typedTenant?.primary_color) {
+            document.documentElement.style.setProperty('--tenant-primary', typedTenant.primary_color);
           }
         }
       } catch (error) {

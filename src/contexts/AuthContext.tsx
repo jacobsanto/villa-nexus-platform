@@ -40,7 +40,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             console.error('Error fetching profile:', error);
             setProfile(null);
           } else {
-            setProfile(profileData);
+            // Cast the role to the proper type
+            const typedProfile: UserProfile = {
+              ...profileData,
+              role: profileData.role as 'admin' | 'member' | 'super_admin'
+            };
+            setProfile(typedProfile);
           }
         } else {
           setProfile(null);
@@ -67,7 +72,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               console.error('Error fetching profile:', error);
               setProfile(null);
             } else {
-              setProfile(profileData);
+              // Cast the role to the proper type
+              const typedProfile: UserProfile = {
+                ...profileData,
+                role: profileData.role as 'admin' | 'member' | 'super_admin'
+              };
+              setProfile(typedProfile);
             }
             setLoading(false);
           });

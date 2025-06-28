@@ -37,6 +37,12 @@ const AddBookingModal = ({ isOpen, onClose, onSuccess, initialDate }: AddBooking
     }
   }, [isOpen, tenant]);
 
+  useEffect(() => {
+    if (initialDate) {
+      setFormData(prev => ({ ...prev, check_in_date: initialDate }));
+    }
+  }, [initialDate]);
+
   const fetchProperties = async () => {
     if (!tenant?.id) return;
 
@@ -49,7 +55,6 @@ const AddBookingModal = ({ isOpen, onClose, onSuccess, initialDate }: AddBooking
 
       if (error) throw error;
       
-      // Type assertion to ensure compatibility with Property interface
       setProperties((data || []) as Property[]);
     } catch (error) {
       console.error('Error fetching properties:', error);
@@ -84,21 +89,25 @@ const AddBookingModal = ({ isOpen, onClose, onSuccess, initialDate }: AddBooking
       toast.success('Booking created successfully');
       onSuccess();
       onClose();
-      setFormData({
-        property_id: '',
-        guest_name: '',
-        check_in_date: '',
-        check_out_date: '',
-        number_of_guests: 1,
-        total_revenue: '',
-        status: 'confirmed'
-      });
+      resetForm();
     } catch (error) {
       console.error('Error creating booking:', error);
       toast.error('Failed to create booking');
     } finally {
       setLoading(false);
     }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      property_id: '',
+      guest_name: '',
+      check_in_date: '',
+      check_out_date: '',
+      number_of_guests: 1,
+      total_revenue: '',
+      status: 'confirmed'
+    });
   };
 
   return (

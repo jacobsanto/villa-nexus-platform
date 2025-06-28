@@ -80,3 +80,14 @@ export interface Booking {
   external_id?: string;
   property_name?: string; // This will be joined from properties table
 }
+
+export interface Report {
+  id: string;
+  created_at: string;
+  tenant_id: string;
+  created_by: string;
+  name: string;
+  description?: string;
+  report_type: string;
+  filters?: any;
+}

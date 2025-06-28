@@ -1,8 +1,8 @@
 
-import AppRouter from "@/components/AppRouter";
+import RootRedirect from "@/components/RootRedirect";
 
 const Index = () => {
-  return <AppRouter />;
+  return <RootRedirect />;
 };
 
 export default Index;

@@ -1,5 +1,6 @@
 
 import { Building2, Home, ClipboardList, Settings, Plug, LogOut, User, Calendar, Package, AlertTriangle } from "lucide-react";
+import { NavLink } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useTenant } from "@/contexts/TenantContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -37,6 +38,14 @@ const TenantSidebar = ({ activePage, setActivePage }: TenantSidebarProps) => {
     }
   };
 
+  const getNavLinkClass = (isActive: boolean) => {
+    return `w-full flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+      isActive
+        ? 'text-white shadow-sm'
+        : 'text-gray-700 hover:text-gray-900'
+    }`;
+  };
+
   return (
     <div className="w-64 bg-white border-r border-gray-200 flex flex-col h-screen">
       {/* Branding Section */}
@@ -67,11 +76,7 @@ const TenantSidebar = ({ activePage, setActivePage }: TenantSidebarProps) => {
             <button
               key={item.id}
               onClick={() => setActivePage(item.id)}
-              className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-                isActive
-                  ? 'text-white shadow-sm'
-                  : 'text-gray-700 hover:text-gray-900'
-              }`}
+              className={getNavLinkClass(isActive)}
               style={isActive ? { backgroundColor: tenant?.primary_color || '#0ea5e9' } : {}}
             >
               <Icon className="w-5 h-5 mr-3" />

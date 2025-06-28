@@ -7,6 +7,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import KanbanColumn from "./KanbanColumn";
 import ViewSwitcher from "./ViewSwitcher";
+import TaskListView from "./TaskListView";
+import TaskAgendaView from "./TaskAgendaView";
 import { Task } from "@/types";
 
 const TasksPage = () => {
@@ -94,14 +96,18 @@ const TasksPage = () => {
     </div>
   );
 
-  const renderPlaceholderView = (viewName: string) => (
-    <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg">
-      <div className="text-center">
-        <p className="text-gray-500 text-lg mb-2">{viewName} View</p>
-        <p className="text-gray-400 text-sm">Coming soon...</p>
-      </div>
-    </div>
-  );
+  const renderCurrentView = () => {
+    switch (activeView) {
+      case 'board':
+        return renderBoardView();
+      case 'list':
+        return <TaskListView tasks={tasks} />;
+      case 'agenda':
+        return <TaskAgendaView tasks={tasks} />;
+      default:
+        return renderBoardView();
+    }
+  };
 
   if (loading) {
     return (
@@ -138,9 +144,7 @@ const TasksPage = () => {
       </div>
       
       <div className="mt-6">
-        {activeView === 'board' && renderBoardView()}
-        {activeView === 'list' && renderPlaceholderView('List')}
-        {activeView === 'agenda' && renderPlaceholderView('Agenda')}
+        {renderCurrentView()}
       </div>
 
       {tasks.length === 0 && !loading && (

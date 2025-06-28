@@ -59,8 +59,12 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
           setTenant(typedTenant);
           
           // Apply tenant branding to CSS variables
-          if (typedTenant?.brand_color_primary) {
+          if (typedTenant) {
             document.documentElement.style.setProperty('--tenant-primary', typedTenant.brand_color_primary);
+            document.documentElement.style.setProperty('--tenant-secondary', typedTenant.brand_color_secondary);
+            document.documentElement.style.setProperty('--tenant-background', typedTenant.brand_color_background);
+            document.documentElement.style.setProperty('--tenant-text', typedTenant.brand_color_text);
+            document.documentElement.style.setProperty('--tenant-font', typedTenant.brand_font_family);
           }
         }
       } catch (error) {

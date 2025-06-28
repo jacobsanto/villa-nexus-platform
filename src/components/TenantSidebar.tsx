@@ -46,7 +46,7 @@ const TenantSidebar = () => {
         ) : (
           <h1 
             className="text-xl font-bold"
-            style={{ color: tenant?.primary_color || '#0ea5e9' }}
+            style={{ color: tenant?.brand_color_primary || '#0ea5e9' }}
           >
             {tenant?.name || 'Arivio'}
           </h1>
@@ -70,7 +70,7 @@ const TenantSidebar = () => {
                   : 'text-gray-700 hover:text-gray-900'
                 }
               `}
-              style={({ isActive }) => isActive ? { backgroundColor: tenant?.primary_color || '#0ea5e9' } : {}}
+              style={({ isActive }) => isActive ? { backgroundColor: tenant?.brand_color_primary || '#0ea5e9' } : {}}
             >
               <Icon className="w-5 h-5 mr-3" />
               {item.name}

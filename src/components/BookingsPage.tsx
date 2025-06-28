@@ -1,44 +1,65 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Plus, Calendar, List, Clock } from "lucide-react";
-import { useTenant } from "@/contexts/TenantContext";
-import { supabase } from "@/integrations/supabase/client";
-import { Booking } from "@/types";
-import { useToast } from "@/hooks/use-toast";
+import { useState, useEffect } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import AddBookingModal from "./AddBookingModal";
-import BookingDetailsPopover from "./BookingDetailsPopover";
+import { format, parseISO } from 'date-fns';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Calendar } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from '@/integrations/supabase/client';
+import { useTenant } from '@/contexts/TenantContext';
 
-type CalendarView = 'dayGridMonth' | 'timeGridWeek' | 'listWeek';
+interface Booking {
+  id: string;
+  property_id: string;
+  guest_name: string;
+  check_in: string;
+  check_out: string;
+  number_of_guests: number;
+  status: 'confirmed' | 'pending' | 'cancelled';
+}
 
 const BookingsPage = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [currentView, setCurrentView] = useState<CalendarView>('dayGridMonth');
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const [showDetailsPopover, setShowDetailsPopover] = useState(false);
-  const { tenant } = useTenant();
   const { toast } = useToast();
+  const { tenant } = useTenant();
+
+  const primaryColor = tenant?.brand_color_primary || '#4f46e5';
+  const secondaryColor = tenant?.brand_color_secondary || '#7c3aed';
+
+  useEffect(() => {
+    fetchBookings();
+  }, []);
 
   const fetchBookings = async () => {
-    if (!tenant?.id) return;
-
+    setLoading(true);
     try {
       const { data, error } = await supabase
         .from('bookings')
-        .select(`
-          *,
-          property:properties(name)
-        `)
-        .eq('tenant_id', tenant.id);
+        .select('*')
+        .eq('tenant_id', tenant?.id);
 
-      if (error) throw error;
-      setBookings(data || []);
+      if (error) {
+        throw error;
+      }
+
+      setBookings(data);
     } catch (error) {
       console.error('Error fetching bookings:', error);
       toast({
@@ -51,139 +72,190 @@ const BookingsPage = () => {
     }
   };
 
-  useEffect(() => {
-    fetchBookings();
-  }, [tenant?.id]);
-
-  const calendarEvents = bookings.map(booking => ({
+  const events = bookings.map((booking) => ({
     id: booking.id,
-    title: `${booking.guest_name || 'Guest'} - ${booking.property_name || 'Property'}`,
-    start: booking.check_in_date,
-    end: booking.check_out_date,
-    backgroundColor: tenant?.primary_color || '#0ea5e9',
-    borderColor: tenant?.primary_color || '#0ea5e9',
-    extendedProps: {
-      booking
-    }
+    title: `${booking.guest_name} - ${booking.number_of_guests} guests`,
+    start: booking.check_in,
+    end: booking.check_out,
+    allDay: false,
+    extendedProps: booking,
   }));
 
-  const handleDateClick = (dateInfo: any) => {
-    setSelectedDate(dateInfo.dateStr);
-    setShowAddModal(true);
+  const handleEventClick = (clickInfo: any) => {
+    setSelectedEvent(clickInfo.event.extendedProps);
+    setOpen(true);
   };
 
-  const handleEventClick = (eventInfo: any) => {
-    setSelectedBooking(eventInfo.event.extendedProps.booking);
-    setShowDetailsPopover(true);
-  };
-
-  const handleBookingSuccess = () => {
-    fetchBookings();
-    setShowAddModal(false);
-    setSelectedDate(null);
-  };
-
-  const viewButtons = [
-    { id: 'dayGridMonth', label: 'Month', icon: Calendar },
-    { id: 'timeGridWeek', label: 'Week', icon: Clock },
-    { id: 'listWeek', label: 'List', icon: List },
-  ];
-
-  if (loading) {
-    return (
-      <div className="p-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-64 mb-6"></div>
-          <div className="h-96 bg-gray-200 rounded"></div>
-        </div>
-      </div>
-    );
-  }
+  const upcomingBookings = bookings
+    .filter((booking) => new Date(booking.check_in) >= new Date())
+    .sort((a, b) => new Date(a.check_in).getTime() - new Date(b.check_in).getTime())
+    .slice(0, 5);
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-        <h1 className="text-3xl font-bold text-gray-900">Bookings Calendar</h1>
-        
-        <div className="flex flex-wrap gap-2">
-          {/* View Controls */}
-          <div className="flex rounded-lg border border-gray-200 overflow-hidden">
-            {viewButtons.map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                onClick={() => setCurrentView(id as CalendarView)}
-                className={`px-3 py-2 text-sm font-medium transition-colors flex items-center gap-2 ${
-                  currentView === id
-                    ? 'text-white shadow-sm'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-                style={currentView === id ? { backgroundColor: tenant?.primary_color || '#0ea5e9' } : {}}
-              >
-                <Icon className="w-4 h-4" />
-                <span className="hidden sm:inline">{label}</span>
-              </button>
-            ))}
+    <div className="space-y-6">
+      <div className="flex items-center justify-between space-y-2">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Bookings</h2>
+          <p className="text-muted-foreground">
+            Here's a list of your upcoming bookings.
+          </p>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Calendar className="mr-2 h-4 w-4" />
+                Add Booking
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Add Booking</DialogTitle>
+                <DialogDescription>
+                  Make changes to your profile here. Click save when you're done.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="name" className="text-right">
+                    Name
+                  </Label>
+                  <Input id="name" value="Pedro Duarte" className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="username" className="text-right">
+                    Username
+                  </Label>
+                  <Input id="username" value="@peduarte" className="col-span-3" />
+                </div>
+              </div>
+              {/*<DialogFooter>
+                <Button type="submit">Save changes</Button>
+              </DialogFooter>*/}
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="lg:col-span-3">
+          <FullCalendar
+            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+            initialView="dayGridMonth"
+            headerToolbar={{
+              left: 'prev,next today',
+              center: 'title',
+              right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            }}
+            events={events}
+            height="auto"
+            eventClick={handleEventClick}
+            eventColor={primaryColor}
+            eventBackgroundColor={primaryColor}
+            eventBorderColor={primaryColor}
+            eventTextColor="white"
+          />
+        </div>
+
+        <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Booking Details</CardTitle>
+              <CardDescription>
+                Click on a booking to view more details
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4">
+              <div className="space-y-1">
+                <Label htmlFor="search">Guest Name</Label>
+                <Input id="search" placeholder="Search guest..." />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="role">Status</Label>
+                <Select>
+                  <SelectTrigger id="role">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent position="popper">
+                    <SelectItem value="admin">Confirmed</SelectItem>
+                    <SelectItem value="editor">Pending</SelectItem>
+                    <SelectItem value="user">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <h3 className="font-semibold text-gray-900 mb-3">Upcoming Bookings</h3>
+            <div className="space-y-3">
+              {upcomingBookings.map((booking) => (
+                <div key={booking.id} className="p-3 rounded-lg border border-gray-100">
+                  <div className="flex items-center justify-between mb-2">
+                    <span 
+                      className="px-2 py-1 text-xs font-medium rounded-full text-white"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      {booking.status}
+                    </span>
+                    <span className="text-sm text-gray-500">
+                      {format(new Date(booking.check_in), 'MMM d')}
+                    </span>
+                  </div>
+                  <h4 className="text-sm font-semibold text-gray-800">{booking.guest_name}</h4>
+                  <p className="text-gray-600 text-xs">
+                    {format(parseISO(booking.check_in), 'MMM d, yyyy')} - {format(parseISO(booking.check_out), 'MMM d, yyyy')}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
-          
-          {/* Add Booking Button */}
-          <Button
-            onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2"
-            style={{ backgroundColor: tenant?.primary_color || '#0ea5e9' }}
-          >
-            <Plus className="w-4 h-4" />
-            Add Booking
-          </Button>
         </div>
       </div>
 
-      {/* Calendar */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-        <FullCalendar
-          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-          initialView={currentView}
-          headerToolbar={{
-            left: 'prev,next today',
-            center: 'title',
-            right: ''
-          }}
-          events={calendarEvents}
-          dateClick={handleDateClick}
-          eventClick={handleEventClick}
-          height="auto"
-          dayMaxEvents={3}
-          moreLinkClick="popover"
-          eventDisplay="block"
-          displayEventTime={false}
-          aspectRatio={1.8}
-          eventMouseEnter={(info) => {
-            info.el.style.cursor = 'pointer';
-          }}
-        />
-      </div>
-
-      {/* Add Booking Modal */}
-      <AddBookingModal
-        isOpen={showAddModal}
-        onClose={() => {
-          setShowAddModal(false);
-          setSelectedDate(null);
-        }}
-        onSuccess={handleBookingSuccess}
-        initialDate={selectedDate}
-      />
-
-      {/* Booking Details Popover */}
-      <BookingDetailsPopover
-        booking={selectedBooking}
-        isOpen={showDetailsPopover}
-        onClose={() => {
-          setShowDetailsPopover(false);
-          setSelectedBooking(null);
-        }}
-        onBookingUpdated={fetchBookings}
-      />
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Booking Details</DialogTitle>
+            <DialogDescription>
+              Information about the selected booking.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedEvent && (
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="guestName" className="text-right">
+                  Guest Name
+                </Label>
+                <Input id="guestName" value={selectedEvent.guest_name} className="col-span-3" readOnly />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="checkIn" className="text-right">
+                  Check-in Date
+                </Label>
+                <Input id="checkIn" value={format(parseISO(selectedEvent.check_in), 'MMM d, yyyy')} className="col-span-3" readOnly />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="checkOut" className="text-right">
+                  Check-out Date
+                </Label>
+                <Input id="checkOut" value={format(parseISO(selectedEvent.check_out), 'MMM d, yyyy')} className="col-span-3" readOnly />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="numGuests" className="text-right">
+                  Number of Guests
+                </Label>
+                <Input id="numGuests" value={selectedEvent.number_of_guests} className="col-span-3" readOnly />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="status" className="text-right">
+                  Status
+                </Label>
+                <Input id="status" value={selectedEvent.status} className="col-span-3" readOnly />
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

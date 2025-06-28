@@ -1,130 +1,114 @@
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, Users, CreditCard, Shield, Lock } from "lucide-react";
 import { useTenant } from "@/contexts/TenantContext";
-import { useAuth } from "@/contexts/AuthContext";
-import TeamPage from "./TeamPage";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const SettingsPage = () => {
   const { tenant } = useTenant();
-  const { profile } = useAuth();
-
-  // Only allow admin access to settings
-  if (profile?.role !== 'admin') {
-    return (
-      <div className="p-6">
-        <div className="flex flex-col items-center justify-center h-64 text-center">
-          <Lock className="w-16 h-16 text-gray-400 mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Access Denied</h2>
-          <p className="text-gray-600">
-            You don't have permission to access settings. Only administrators can manage tenant settings.
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-        <p className="text-gray-600 mt-2">
-          Manage your account preferences, team members, and integrations.
+    <div className="space-y-6">
+      <div className="space-y-0.5">
+        <h2 className="text-2xl font-bold tracking-tight">Settings</h2>
+        <p className="text-muted-foreground">
+          Manage your account settings and set preferences.
         </p>
       </div>
-      
-      <Tabs defaultValue="general" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="team">Team</TabsTrigger>
-          <TabsTrigger value="billing">Billing</TabsTrigger>
-          <TabsTrigger value="security">Security</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="general">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Settings className="w-5 h-5 mr-2" />
-                  General Settings
-                </CardTitle>
-                <CardDescription>Company information and preferences</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium">Company Name</label>
-                  <p className="text-sm text-gray-600">{tenant?.name || 'Your Property Company'}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Primary Color</label>
-                  <div className="flex items-center space-x-2">
-                    <div 
-                      className="w-4 h-4 rounded" 
-                      style={{ backgroundColor: tenant?.primary_color || '#0ea5e9' }}
-                    ></div>
-                    <p className="text-sm text-gray-600">{tenant?.primary_color || '#0ea5e9'}</p>
-                  </div>
-                </div>
-                <Button variant="outline" size="sm">Edit Settings</Button>
-              </CardContent>
-            </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Branding</CardTitle>
+          <CardDescription>
+            Customize your company's visual identity
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="primaryColor">Primary Color</Label>
+            <div className="flex items-center space-x-3 mt-1">
+              <Input
+                id="primaryColor"
+                type="color"
+                value={tenant?.brand_color_primary || '#4f46e5'}
+                className="w-16 h-10"
+                readOnly
+              />
+              <Input
+                value={tenant?.brand_color_primary || '#4f46e5'}
+                className="font-mono"
+                readOnly
+              />
+            </div>
           </div>
-        </TabsContent>
+          
+          <div>
+            <Label htmlFor="secondaryColor">Secondary Color</Label>
+            <div className="flex items-center space-x-3 mt-1">
+              <Input
+                id="secondaryColor"
+                type="color"
+                value={tenant?.brand_color_secondary || '#7c3aed'}
+                className="w-16 h-10"
+                readOnly
+              />
+              <Input
+                value={tenant?.brand_color_secondary || '#7c3aed'}
+                className="font-mono"
+                readOnly
+              />
+            </div>
+          </div>
 
-        <TabsContent value="team">
-          <TeamPage />
-        </TabsContent>
+          <div>
+            <Label htmlFor="backgroundColor">Background Color</Label>
+            <div className="flex items-center space-x-3 mt-1">
+              <Input
+                id="backgroundColor"
+                type="color"
+                value={tenant?.brand_color_background || '#f9fafb'}
+                className="w-16 h-10"
+                readOnly
+              />
+              <Input
+                value={tenant?.brand_color_background || '#f9fafb'}
+                className="font-mono"
+                readOnly
+              />
+            </div>
+          </div>
 
-        <TabsContent value="billing">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <CreditCard className="w-5 h-5 mr-2" />
-                Billing & Subscription
-              </CardTitle>
-              <CardDescription>Manage your subscription and payment methods</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Current Plan</span>
-                <Badge>Professional</Badge>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Next Billing</span>
-                <span className="text-sm text-gray-600">Jan 15, 2024</span>
-              </div>
-              <Button variant="outline" size="sm">Manage Billing</Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
+          <div>
+            <Label htmlFor="textColor">Text Color</Label>
+            <div className="flex items-center space-x-3 mt-1">
+              <Input
+                id="textColor"
+                type="color"
+                value={tenant?.brand_color_text || '#1f2937'}
+                className="w-16 h-10"
+                readOnly
+              />
+              <Input
+                value={tenant?.brand_color_text || '#1f2937'}
+                className="font-mono"
+                readOnly
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-        <TabsContent value="security">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Shield className="w-5 h-5 mr-2" />
-                Security & Privacy
-              </CardTitle>
-              <CardDescription>Account security and data privacy settings</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Two-Factor Auth</span>
-                <Badge className="bg-green-100 text-green-800">Enabled</Badge>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Data Backup</span>
-                <Badge className="bg-green-100 text-green-800">Active</Badge>
-              </div>
-              <Button variant="outline" size="sm">Security Settings</Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      <Card>
+        <CardHeader>
+          <CardTitle>Danger Zone</CardTitle>
+          <CardDescription>
+            Here you can perform destructive actions.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Button variant="destructive">Delete account</Button>
+        </CardContent>
+      </Card>
     </div>
   );
 };

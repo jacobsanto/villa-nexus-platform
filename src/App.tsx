@@ -7,12 +7,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { TenantProvider } from "@/contexts/TenantContext";
 import LoginPage from "@/components/LoginPage";
-import TenantDashboard from "@/components/TenantDashboard";
-import SuperAdminDashboard from "@/components/SuperAdminDashboard";
+import SignUpPage from "@/components/SignUpPage";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import SuperAdminRoute from "@/components/SuperAdminRoute";
 import RootRedirect from "@/components/RootRedirect";
-import AppLayout from "@/components/AppLayout";
 
 const queryClient = new QueryClient();
 
@@ -27,27 +24,14 @@ const App = () => (
             <Routes>
               {/* Public routes */}
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/signup" element={<SignUpPage />} />
+              
+              {/* Root redirect */}
+              <Route path="/" element={<RootRedirect />} />
               
               {/* Protected routes */}
-              <Route path="/" element={<AppLayout />}>
-                <Route index element={<RootRedirect />} />
-                <Route 
-                  path="dashboard" 
-                  element={
-                    <ProtectedRoute>
-                      <TenantDashboard />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="super-admin" 
-                  element={
-                    <SuperAdminRoute>
-                      <SuperAdminDashboard />
-                    </SuperAdminRoute>
-                  } 
-                />
-              </Route>
+              <Route path="/dashboard" element={<ProtectedRoute />} />
+              <Route path="/super-admin" element={<ProtectedRoute />} />
             </Routes>
           </BrowserRouter>
         </TenantProvider>

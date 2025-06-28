@@ -58,18 +58,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null);
         
         if (session?.user) {
+          // Fetch profile after session is confirmed
           const profileData = await fetchProfile(session.user.id);
           if (mounted) {
             setProfile(profileData);
+            setLoading(false);
           }
         } else {
           if (mounted) {
             setProfile(null);
+            setLoading(false);
           }
-        }
-        
-        if (mounted) {
-          setLoading(false);
         }
       }
     );

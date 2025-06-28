@@ -4,50 +4,61 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Mail, Lock, Eye, EyeOff, User } from "lucide-react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import LoginPageHeader from "./LoginPageHeader";
 
-const LoginPage = () => {
+const SignUpPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [credentials, setCredentials] = useState({
     email: '',
-    password: ''
+    password: '',
+    fullName: ''
   });
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
   const { toast } = useToast();
-  const navigate = useNavigate();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signUp({
         email: credentials.email,
         password: credentials.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            full_name: credentials.fullName,
+            role: 'admin'
+          },
+        },
       });
 
       if (error) {
         setError(error.message);
         toast({
-          title: "Login Failed",
+          title: "Sign Up Failed",
           description: error.message,
           variant: "destructive",
         });
       } else {
-        // Immediately navigate to dashboard after successful login
-        navigate('/dashboard', { replace: true });
+        setSuccess(true);
+        toast({
+          title: "Sign Up Successful",
+          description: "Please check your email for a verification link",
+        });
       }
     } catch (error) {
       const errorMessage = "An unexpected error occurred";
       setError(errorMessage);
       toast({
-        title: "Login Failed",
+        title: "Sign Up Failed",
         description: errorMessage,
         variant: "destructive",
       });
@@ -56,6 +67,31 @@ const LoginPage = () => {
     }
   };
 
+  if (success) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 p-4">
+        <div className="w-full max-w-md">
+          <LoginPageHeader />
+          <Card className="shadow-lg border-0">
+            <CardHeader className="space-y-1">
+              <CardTitle className="text-xl text-center">Check Your Email</CardTitle>
+              <CardDescription className="text-center">
+                We've sent you a verification link. Please check your email and click the link to activate your account.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center">
+                <Link to="/login" className="text-blue-600 hover:underline">
+                  Back to Sign In
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 p-4">
       <div className="w-full max-w-md">
@@ -63,9 +99,9 @@ const LoginPage = () => {
 
         <Card className="shadow-lg border-0">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-xl text-center">Welcome Back</CardTitle>
+            <CardTitle className="text-xl text-center">Create Account</CardTitle>
             <CardDescription className="text-center">
-              Sign in to your account
+              Sign up to get started
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -75,7 +111,24 @@ const LoginPage = () => {
               </div>
             )}
             
-            <form onSubmit={handleLogin} className="space-y-4">
+            <form onSubmit={handleSignUp} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="fullName">Full Name</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="fullName"
+                    type="text"
+                    placeholder="Enter your full name"
+                    value={credentials.fullName}
+                    onChange={(e) => setCredentials({...credentials, fullName: e.target.value})}
+                    className="pl-10"
+                    required
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
@@ -100,7 +153,7 @@ const LoginPage = () => {
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
+                    placeholder="Create a password"
                     value={credentials.password}
                     onChange={(e) => setCredentials({...credentials, password: e.target.value})}
                     className="pl-10 pr-10"
@@ -119,19 +172,13 @@ const LoginPage = () => {
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Signing In..." : "Sign In"}
+                {loading ? "Creating Account..." : "Create Account"}
               </Button>
             </form>
 
             <div className="mt-6 text-center">
-              <a href="#" className="text-sm text-blue-600 hover:underline">
-                Forgot your password?
-              </a>
-            </div>
-
-            <div className="mt-4 text-center">
-              <Link to="/signup" className="text-blue-600 hover:underline text-sm">
-                Don't have an account? Sign Up
+              <Link to="/login" className="text-blue-600 hover:underline text-sm">
+                Already have an account? Sign In
               </Link>
             </div>
           </CardContent>
@@ -145,4 +192,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default SignUpPage;

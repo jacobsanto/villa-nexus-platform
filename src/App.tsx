@@ -5,21 +5,12 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { TenantProvider } from "@/contexts/TenantContext";
 import LoginPage from "@/components/LoginPage";
 import SignUpPage from "@/components/SignUpPage";
+import SuperAdminLoginPage from "@/components/SuperAdminLoginPage";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import SuperAdminRoute from "@/components/SuperAdminRoute";
-import AppLayout from "@/components/AppLayout";
-import DashboardPage from "@/components/DashboardPage";
-import PropertiesPage from "@/components/PropertiesPage";
-import BookingsPage from "@/components/BookingsPage";
-import InventoryPage from "@/components/InventoryPage";
-import DamageReportsPage from "@/components/DamageReportsPage";
-import IntegrationsPage from "@/components/IntegrationsPage";
-import TasksPage from "@/components/TasksPage";
-import SettingsPage from "@/components/SettingsPage";
-import SuperAdminDashboard from "@/components/SuperAdminDashboard";
+import TenantApp from "@/components/TenantApp";
+import SuperAdminApp from "@/components/SuperAdminApp";
 
 const queryClient = new QueryClient();
 
@@ -30,40 +21,64 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <TenantProvider>
-            <Routes>
-              {/* Public routes */}
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/signup" element={<SignUpPage />} />
-              
-              {/* Protected routes */}
-              <Route path="/" element={
-                <ProtectedRoute>
-                  <AppLayout />
-                </ProtectedRoute>
-              }>
-                {/* Default redirect to dashboard */}
-                <Route index element={<Navigate to="/dashboard" replace />} />
-                
-                {/* Tenant Routes */}
-                <Route path="dashboard" element={<DashboardPage />} />
-                <Route path="properties" element={<PropertiesPage />} />
-                <Route path="bookings" element={<BookingsPage />} />
-                <Route path="inventory" element={<InventoryPage />} />
-                <Route path="damage-reports" element={<DamageReportsPage />} />
-                <Route path="integrations" element={<IntegrationsPage />} />
-                <Route path="tasks" element={<TasksPage />} />
-                <Route path="settings" element={<SettingsPage />} />
+          <Routes>
+            {/* Public Tenant Routes */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignUpPage />} />
 
-                {/* Super Admin Route */}
-                <Route path="super-admin" element={
-                  <SuperAdminRoute>
-                    <SuperAdminDashboard />
-                  </SuperAdminRoute>
-                } />
-              </Route>
-            </Routes>
-          </TenantProvider>
+            {/* Authenticated Tenant App */}
+            <Route path="/dashboard/*" element={
+              <ProtectedRoute role="admin" or_role="member">
+                <TenantApp />
+              </ProtectedRoute>
+            } />
+            <Route path="/properties/*" element={
+              <ProtectedRoute role="admin" or_role="member">
+                <TenantApp />
+              </ProtectedRoute>
+            } />
+            <Route path="/bookings/*" element={
+              <ProtectedRoute role="admin" or_role="member">
+                <TenantApp />
+              </ProtectedRoute>
+            } />
+            <Route path="/inventory/*" element={
+              <ProtectedRoute role="admin" or_role="member">
+                <TenantApp />
+              </ProtectedRoute>
+            } />
+            <Route path="/damage-reports/*" element={
+              <ProtectedRoute role="admin" or_role="member">
+                <TenantApp />
+              </ProtectedRoute>
+            } />
+            <Route path="/integrations/*" element={
+              <ProtectedRoute role="admin" or_role="member">
+                <TenantApp />
+              </ProtectedRoute>
+            } />
+            <Route path="/tasks/*" element={
+              <ProtectedRoute role="admin" or_role="member">
+                <TenantApp />
+              </ProtectedRoute>
+            } />
+            <Route path="/settings/*" element={
+              <ProtectedRoute role="admin">
+                <TenantApp />
+              </ProtectedRoute>
+            } />
+
+            {/* Super Admin World */}
+            <Route path="/admin" element={<SuperAdminLoginPage />} />
+            <Route path="/super-admin/*" element={
+              <ProtectedRoute role="super_admin">
+                <SuperAdminApp />
+              </ProtectedRoute>
+            } />
+
+            {/* Default redirect */}
+            <Route path="/" element={<Navigate to="/login" />} />
+          </Routes>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

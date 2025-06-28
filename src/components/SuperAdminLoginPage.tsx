@@ -1,15 +1,15 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import LoginPageHeader from "./LoginPageHeader";
 
-const LoginPage = () => {
+const SuperAdminLoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [credentials, setCredentials] = useState({
@@ -36,7 +36,7 @@ const LoginPage = () => {
           variant: "destructive",
         });
       } else {
-        navigate('/dashboard', { replace: true });
+        navigate('/super-admin/dashboard', { replace: true });
       }
     } catch (error) {
       toast({
@@ -50,15 +50,18 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800 p-4">
       <div className="w-full max-w-md">
-        <LoginPageHeader />
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-white mb-2">Arivio Platform Administration</h1>
+          <p className="text-gray-300">Super Admin Access</p>
+        </div>
 
-        <Card className="shadow-lg border-0">
+        <Card className="shadow-lg border-0 bg-white">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-xl text-center">Welcome Back</CardTitle>
+            <CardTitle className="text-xl text-center">Admin Sign In</CardTitle>
             <CardDescription className="text-center">
-              Sign in to your account
+              Enter your administrator credentials
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -105,31 +108,19 @@ const LoginPage = () => {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" className="w-full bg-gray-900 hover:bg-gray-800" disabled={loading}>
                 {loading ? "Signing In..." : "Sign In"}
               </Button>
             </form>
-
-            <div className="mt-6 text-center">
-              <a href="#" className="text-sm text-blue-600 hover:underline">
-                Forgot your password?
-              </a>
-            </div>
-
-            <div className="mt-4 text-center">
-              <Link to="/signup" className="text-blue-600 hover:underline text-sm">
-                Don't have an account? Sign Up
-              </Link>
-            </div>
           </CardContent>
         </Card>
 
-        <div className="mt-8 text-center text-sm text-gray-500">
-          <p>Powered by <span className="font-semibold text-gray-700">Arivio</span></p>
+        <div className="mt-8 text-center text-sm text-gray-400">
+          <p>Arivio Platform Administration</p>
         </div>
       </div>
     </div>
   );
 };
 
-export default LoginPage;
+export default SuperAdminLoginPage;

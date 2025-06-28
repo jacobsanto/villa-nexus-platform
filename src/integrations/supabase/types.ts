@@ -9,6 +9,30 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      integrations: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          logo_url: string | null
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -41,10 +65,117 @@ export type Database = {
           },
         ]
       }
+      properties: {
+        Row: {
+          address: string | null
+          bathrooms: number | null
+          bedrooms: number | null
+          created_at: string
+          external_id: string
+          id: string
+          image_url: string | null
+          integration_id: string
+          name: string
+          nightly_rate: number | null
+          status: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          created_at?: string
+          external_id: string
+          id?: string
+          image_url?: string | null
+          integration_id: string
+          name: string
+          nightly_rate?: number | null
+          status?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          created_at?: string
+          external_id?: string
+          id?: string
+          image_url?: string | null
+          integration_id?: string
+          name?: string
+          nightly_rate?: number | null
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "properties_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_integrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "properties_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenant_integrations: {
+        Row: {
+          api_credentials: Json | null
+          created_at: string
+          id: string
+          integration_id: string
+          is_active: boolean
+          last_sync_at: string | null
+          tenant_id: string
+        }
+        Insert: {
+          api_credentials?: Json | null
+          created_at?: string
+          id?: string
+          integration_id: string
+          is_active?: boolean
+          last_sync_at?: string | null
+          tenant_id: string
+        }
+        Update: {
+          api_credentials?: Json | null
+          created_at?: string
+          id?: string
+          integration_id?: string
+          is_active?: boolean
+          last_sync_at?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_integrations_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "integrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenant_integrations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenants: {
         Row: {
           created_at: string
-          guesty_api_key: string | null
           id: string
           logo_url: string | null
           name: string
@@ -53,7 +184,6 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          guesty_api_key?: string | null
           id?: string
           logo_url?: string | null
           name: string
@@ -62,7 +192,6 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          guesty_api_key?: string | null
           id?: string
           logo_url?: string | null
           name?: string

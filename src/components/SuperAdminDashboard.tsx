@@ -3,13 +3,31 @@ import { useState, useEffect } from "react";
 import { Building2, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Tenant } from "@/types";
 import StatsCard from "./StatsCard";
 import TenantManagementSection from "./TenantManagementSection";
 import AddTenantModal from "./AddTenantModal";
 
+interface EnhancedTenant {
+  id: string;
+  name: string;
+  status: 'active' | 'inactive';
+  created_at: string;
+  brand_color_primary: string;
+  brand_color_secondary: string;
+  brand_color_background: string;
+  brand_color_text: string;
+  brand_font_family: string;
+  phone_number?: string;
+  logo_url?: string;
+  contact_email?: string;
+  address?: string;
+  website?: string;
+  vat_number?: string;
+  user_count: number;
+}
+
 const SuperAdminDashboard = () => {
-  const [tenants, setTenants] = useState<Tenant[]>([]);
+  const [tenants, setTenants] = useState<EnhancedTenant[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { toast } = useToast();
@@ -17,18 +35,16 @@ const SuperAdminDashboard = () => {
   const fetchTenants = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('tenants')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const { data, error } = await supabase.rpc('get_tenants_with_user_count');
 
       if (error) {
         throw error;
       }
 
-      const typedTenants: Tenant[] = data.map(tenant => ({
+      const typedTenants: EnhancedTenant[] = data.map(tenant => ({
         ...tenant,
-        status: tenant.status as 'active' | 'inactive'
+        status: tenant.status as 'active' | 'inactive',
+        user_count: Number(tenant.user_count)
       }));
 
       setTenants(typedTenants);
@@ -48,6 +64,8 @@ const SuperAdminDashboard = () => {
     fetchTenants();
   }, []);
 
+  const totalUsers = tenants.reduce((sum, tenant) => sum + tenant.user_count, 0);
+
   const statsData = [
     {
       title: "Total Tenants",
@@ -57,7 +75,7 @@ const SuperAdminDashboard = () => {
     },
     {
       title: "Total Users",
-      value: "-",
+      value: totalUsers,
       description: "Across all tenants",
       icon: Users
     },
@@ -88,6 +106,7 @@ const SuperAdminDashboard = () => {
           tenants={tenants}
           loading={loading}
           onAddTenant={() => setIsModalOpen(true)}
+          onTenantDeleted={fetchTenants}
         />
       </div>
 

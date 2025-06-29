@@ -10,15 +10,15 @@ const TenantSidebar = () => {
   const { profile, signOut } = useAuth();
 
   const navigationItems = [
-    { id: 'dashboard', name: 'Dashboard', icon: Home, path: '/dashboard', roles: ['admin', 'member'] },
-    { id: 'properties', name: 'Properties', icon: Building2, path: '/properties', roles: ['admin', 'member'] },
-    { id: 'bookings', name: 'Bookings', icon: Calendar, path: '/bookings', roles: ['admin', 'member'] },
-    { id: 'inventory', name: 'Inventory', icon: Package, path: '/inventory', roles: ['admin', 'member'] },
-    { id: 'damage-reports', name: 'Damage Reports', icon: AlertTriangle, path: '/damage-reports', roles: ['admin', 'member'] },
-    { id: 'integrations', name: 'Integrations', icon: Plug, path: '/integrations', roles: ['admin', 'member'] },
-    { id: 'tasks', name: 'Tasks', icon: ClipboardList, path: '/tasks', roles: ['admin', 'member'] },
-    { id: 'team-chat', name: 'Team Chat', icon: MessageCircle, path: '/team-chat', roles: ['admin', 'member'] },
-    { id: 'settings', name: 'Settings', icon: Settings, path: '/settings', roles: ['admin'] },
+    { id: 'dashboard', name: 'Dashboard', icon: Home, path: 'dashboard', roles: ['admin', 'member'] },
+    { id: 'properties', name: 'Properties', icon: Building2, path: 'properties', roles: ['admin', 'member'] },
+    { id: 'bookings', name: 'Bookings', icon: Calendar, path: 'bookings', roles: ['admin', 'member'] },
+    { id: 'inventory', name: 'Inventory', icon: Package, path: 'inventory', roles: ['admin', 'member'] },
+    { id: 'damage-reports', name: 'Damage Reports', icon: AlertTriangle, path: 'damage-reports', roles: ['admin', 'member'] },
+    { id: 'integrations', name: 'Integrations', icon: Plug, path: 'integrations', roles: ['admin', 'member'] },
+    { id: 'tasks', name: 'Tasks', icon: ClipboardList, path: 'tasks', roles: ['admin', 'member'] },
+    { id: 'team-chat', name: 'Team Chat', icon: MessageCircle, path: 'team-chat', roles: ['admin', 'member'] },
+    { id: 'settings', name: 'Settings', icon: Settings, path: 'settings', roles: ['admin'] },
   ];
 
   // Filter navigation items based on user role

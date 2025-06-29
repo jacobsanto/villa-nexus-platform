@@ -26,16 +26,16 @@ const TenantAppContent = () => {
       <TenantSidebar />
       <main className="flex-1 overflow-auto">
         <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/properties" element={<PropertiesPage />} />
-          <Route path="/bookings" element={<BookingsPage />} />
-          <Route path="/inventory" element={<InventoryPage />} />
-          <Route path="/damage-reports" element={<DamageReportsPage />} />
-          <Route path="/integrations" element={<IntegrationsPage />} />
-          <Route path="/tasks" element={<TasksPage />} />
-          <Route path="/team-chat" element={<TeamChatPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<DashboardPage />} />
+          <Route path="properties" element={<PropertiesPage />} />
+          <Route path="bookings" element={<BookingsPage />} />
+          <Route path="inventory" element={<InventoryPage />} />
+          <Route path="damage-reports" element={<DamageReportsPage />} />
+          <Route path="integrations" element={<IntegrationsPage />} />
+          <Route path="tasks" element={<TasksPage />} />
+          <Route path="team-chat" element={<TeamChatPage />} />
+          <Route path="settings" element={<SettingsPage />} />
         </Routes>
       </main>
     </div>

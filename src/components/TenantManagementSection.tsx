@@ -2,16 +2,25 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { Tenant } from "@/types";
 import TenantListItem from "./TenantListItem";
 
-interface TenantManagementSectionProps {
-  tenants: Tenant[];
-  loading: boolean;
-  onAddTenant: () => void;
+interface EnhancedTenant {
+  id: string;
+  name: string;
+  status: 'active' | 'inactive';
+  created_at: string;
+  brand_color_primary: string;
+  user_count: number;
 }
 
-const TenantManagementSection = ({ tenants, loading, onAddTenant }: TenantManagementSectionProps) => {
+interface TenantManagementSectionProps {
+  tenants: EnhancedTenant[];
+  loading: boolean;
+  onAddTenant: () => void;
+  onTenantDeleted: () => void;
+}
+
+const TenantManagementSection = ({ tenants, loading, onAddTenant, onTenantDeleted }: TenantManagementSectionProps) => {
   return (
     <Card>
       <CardHeader>
@@ -41,7 +50,11 @@ const TenantManagementSection = ({ tenants, loading, onAddTenant }: TenantManage
         ) : (
           <div className="space-y-4">
             {tenants.map((tenant) => (
-              <TenantListItem key={tenant.id} tenant={tenant} />
+              <TenantListItem 
+                key={tenant.id} 
+                tenant={tenant} 
+                onTenantDeleted={onTenantDeleted}
+              />
             ))}
           </div>
         )}

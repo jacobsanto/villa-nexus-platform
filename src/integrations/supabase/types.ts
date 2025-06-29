@@ -646,6 +646,31 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      delete_tenant: {
+        Args: { tenant_id: string }
+        Returns: Json
+      }
+      get_tenants_with_user_count: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          name: string
+          status: string
+          created_at: string
+          brand_color_primary: string
+          brand_color_secondary: string
+          brand_color_background: string
+          brand_color_text: string
+          brand_font_family: string
+          phone_number: string
+          logo_url: string
+          contact_email: string
+          address: string
+          website: string
+          vat_number: string
+          user_count: number
+        }[]
+      }
       get_user_role: {
         Args: { user_id: string }
         Returns: string

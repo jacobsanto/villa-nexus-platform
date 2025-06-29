@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -48,15 +47,15 @@ const SignUpPage = () => {
         throw tenantError;
       }
 
-      // Parse tenant result
+      // Parse tenant result with proper type handling
       let tenantResult: TenantCreationResult;
       try {
-        if (typeof tenantData === 'object' && tenantData !== null) {
-          tenantResult = tenantData as TenantCreationResult;
+        if (tenantData && typeof tenantData === 'object' && !Array.isArray(tenantData)) {
+          tenantResult = tenantData as unknown as TenantCreationResult;
         } else if (typeof tenantData === 'string') {
           tenantResult = JSON.parse(tenantData) as TenantCreationResult;
         } else {
-          throw new Error('Invalid tenant creation response');
+          throw new Error('Invalid tenant creation response format');
         }
       } catch (parseError) {
         console.error('❌ Error parsing tenant result:', parseError);

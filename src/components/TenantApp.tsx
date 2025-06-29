@@ -26,7 +26,7 @@ const TenantAppContent = () => {
       <TenantSidebar />
       <main className="flex-1 overflow-auto">
         <Routes>
-          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route index element={<Navigate to="/dashboard/dashboard" replace />} />
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="properties" element={<PropertiesPage />} />
           <Route path="bookings" element={<BookingsPage />} />
